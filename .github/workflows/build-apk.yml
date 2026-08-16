@@ -1,0 +1,56 @@
+name: Build Android App Bundle (Release)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Print Keystore SHA-1 Fingerprint
+        run: keytool -list -v -keystore android/app/taja-release.keystore -alias taja -storepass tajacart2026 | grep SHA1
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Release APK and AAB
+        working-directory: ./android
+        run: |
+          sed -i 's/\r$//' gradlew
+          chmod +x ./gradlew
+          ./gradlew assembleRelease bundleRelease -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/app/taja-release.keystore -Pandroid.injected.signing.store.password=tajacart2026 -Pandroid.injected.signing.key.alias=taja -Pandroid.injected.signing.key.password=tajacart2026
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TajaCart-Release-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TajaCart-Release-AAB
+          path: android/app/build/outputs/bundle/release/app-release.aab

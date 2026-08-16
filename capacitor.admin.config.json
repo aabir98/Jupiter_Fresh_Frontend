@@ -1,0 +1,10 @@
+﻿{
+  "appId": "com.taja.admin",
+  "appName": "Taja Admin",
+  "webDir": "dist",
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}

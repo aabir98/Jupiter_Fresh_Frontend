@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "969406446453",
+    "project_id": "tajacart-5e03a",
+    "storage_bucket": "tajacart-5e03a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969406446453:android:0f4323a426969439a5b13c",
+        "android_client_info": {
+          "package_name": "com.taja.cart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "969406446453-1tlpqanbj8ips14bttt5ev7j6nelp77v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.taja.cart",
+            "certificate_hash": "22b3416d3906990839f68a7305e187ca6252d738"
+          }
+        },
+        {
+          "client_id": "969406446453-8l9rk1h750jn8dgub1cl7sso7o86l4hn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.taja.cart",
+            "certificate_hash": "27968c0cf49b1774e4220dbfc72b87f79c6893e5"
+          }
+        },
+        {
+          "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKnYOlmlcve8-nXQPC5XyZWE8nCXQYFms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
