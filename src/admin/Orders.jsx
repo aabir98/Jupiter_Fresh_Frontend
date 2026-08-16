@@ -7,11 +7,6 @@ function Orders() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   
-  // ETA State
-  const [activeEtaOrder, setActiveEtaOrder] = useState(null);
-  const [etaValue, setEtaValue] = useState('15');
-  const [customEta, setCustomEta] = useState('');
-  
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -46,31 +41,6 @@ function Orders() {
     }
   };
 
-  const updateOrderStatus = async (orderId, newStatus, eta = null) => {
-    try {
-      const payload = { status: newStatus };
-      if (eta) {
-        payload.eta = eta;
-      }
-      
-      const response = await fetch(`http://192.168.0.112:8000/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (response.ok) {
-        setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus, eta: eta || o.eta } : o));
-        setActiveEtaOrder(null);
-        setEtaValue('15');
-        setCustomEta('');
-      } else {
-        alert("Failed to update status");
-      }
-    } catch (error) {
-      console.error("Error updating status:", error);
-      alert("Network error. Please try again.");
-    }
-  };
 
   const deleteOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to permanently delete this order?")) {
@@ -263,77 +233,19 @@ function Orders() {
                     {order.review && <p style={{ margin: '0', fontSize: '13px', color: '#475569', fontStyle: 'italic' }}>"{order.review}"</p>}
                   </div>
                 )}
-
-                <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    {(!order.status || order.status === 'Placed') && (
-                      <button 
-                        onClick={() => setActiveEtaOrder(order.id)}
-                        style={{ flex: 1, backgroundColor: '#fef08a', color: '#854d0e', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        Mark as Picked Up
-                      </button>
-                    )}
-                    {order.status === 'Picked Up' && (
-                      <button 
-                        onClick={() => updateOrderStatus(order.id, 'Delivered')}
-                        style={{ flex: 1, backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
-                      >
-                        Mark as Delivered
-                      </button>
-                    )}
-                    {order.status === 'Delivered' && (
-                      <div style={{ flex: 1, backgroundColor: '#f1f5f9', color: '#64748b', padding: '10px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center' }}>
-                        Order Delivered ✅
-                      </div>
+                
+                {order.dp_name && (
+                  <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: '#e0f2fe', borderRadius: '8px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#0369a1' }}>Delivery Partner</h4>
+                    <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#0c4a6e', fontWeight: 'bold' }}>{order.dp_name}</p>
+                    <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#0c4a6e' }}>Phone: {order.dp_phone}</p>
+                    {order.eta && <p style={{ margin: '0', fontSize: '13px', color: '#0c4a6e', fontWeight: 'bold' }}>ETA: {order.eta}</p>}
+                    {order.delivery_partner_rating && (
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#0c4a6e' }}>Customer Rated DP: {order.delivery_partner_rating} ★</p>
                     )}
                   </div>
-                  
-                  {activeEtaOrder === order.id && (
-                    <div style={{ padding: '12px', backgroundColor: '#fefce8', borderRadius: '8px', border: '1px solid #fef08a', marginTop: '10px' }}>
-                      <h4 style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#854d0e' }}>Select ETA</h4>
-                      <select 
-                        value={etaValue} 
-                        onChange={(e) => setEtaValue(e.target.value)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #fde047', marginBottom: '8px', fontSize: '13px', outline: 'none' }}
-                      >
-                        <option value="5">5 mins</option>
-                        <option value="15">15 mins</option>
-                        <option value="30">30 mins</option>
-                        <option value="Others">Others</option>
-                      </select>
-                      
-                      {etaValue === 'Others' && (
-                        <input 
-                          type="number" 
-                          placeholder="Enter minutes..." 
-                          value={customEta}
-                          onChange={(e) => setCustomEta(e.target.value)}
-                          style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #fde047', marginBottom: '8px', fontSize: '13px', boxSizing: 'border-box', outline: 'none' }}
-                        />
-                      )}
-                      
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
-                          onClick={() => setActiveEtaOrder(null)}
-                          style={{ flex: 1, backgroundColor: 'white', color: '#854d0e', border: '1px solid #fde047', padding: '8px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                          Cancel
-                        </button>
-                        <button 
-                          onClick={() => {
-                            const finalEta = etaValue === 'Others' ? customEta : etaValue;
-                            if (!finalEta) return alert('Please provide an ETA');
-                            updateOrderStatus(order.id, 'Picked Up', finalEta);
-                          }}
-                          style={{ flex: 1, backgroundColor: '#854d0e', color: 'white', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                          Confirm Pick Up
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   {order.status === 'Delivered' && (
                     <button 

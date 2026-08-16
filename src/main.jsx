@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import App from './App.jsx'
 import AdminLayout from './admin/AdminLayout.jsx'
+import DeliveryLayout from './delivery/DeliveryLayout.jsx'
 
 const AppTarget = import.meta.env.VITE_APP_TARGET === 'admin' ? AdminLayout : App;
 
@@ -20,8 +21,9 @@ createRoot(document.getElementById('root')).render(
             </>
           ) : (
             <>
-              <Route path="/*" element={<App />} />
+              <Route path="/delivery/*" element={<DeliveryLayout />} />
               <Route path="/admin/*" element={<AdminLayout />} />
+              <Route path="/*" element={<App />} />
             </>
           )}
         </Routes>
