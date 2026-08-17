@@ -13,7 +13,7 @@ function Settings() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/settings');
+      const response = await fetch('http://localhost:8000/api/settings');
       if (response.ok) {
         const data = await response.json();
         const minOrderSetting = data.find(s => s.key === 'MIN_ORDER_FOR_FREE_DELIVERY');
@@ -34,12 +34,12 @@ function Settings() {
     setSaving(true);
     try {
       await Promise.all([
-        fetch('http://192.168.0.112:8000/api/settings', {
+        fetch('http://localhost:8000/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key: 'MIN_ORDER_FOR_FREE_DELIVERY', value: minOrder })
         }),
-        fetch('http://192.168.0.112:8000/api/settings', {
+        fetch('http://localhost:8000/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key: 'DELIVERY_CHARGE', value: deliveryCharge })

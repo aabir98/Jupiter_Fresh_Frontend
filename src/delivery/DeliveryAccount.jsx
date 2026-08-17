@@ -10,7 +10,7 @@ export default function DeliveryAccount({ user, setUser, onLogout }) {
 
   // Fetch latest user data when Account tab mounts to get fresh ratings
   useEffect(() => {
-    fetch(`http://192.168.0.112:8000/api/delivery-personnel/${user.id}`)
+    fetch(`http://localhost:8000/api/delivery-personnel/${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.id && (data.rating !== user.rating || data.total_ratings !== user.total_ratings)) {
@@ -22,7 +22,7 @@ export default function DeliveryAccount({ user, setUser, onLogout }) {
 
   useEffect(() => {
     if (user.hub_id) {
-      fetch('http://192.168.0.112:8000/api/hubs')
+      fetch('http://localhost:8000/api/hubs')
         .then(res => res.json())
         .then(data => {
           const hub = data.find(h => h.id === user.hub_id);
@@ -44,7 +44,7 @@ export default function DeliveryAccount({ user, setUser, onLogout }) {
     
     setSaving(true);
     try {
-      const res = await fetch(`http://192.168.0.112:8000/api/delivery-personnel/${user.id}`, {
+      const res = await fetch(`http://localhost:8000/api/delivery-personnel/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone })

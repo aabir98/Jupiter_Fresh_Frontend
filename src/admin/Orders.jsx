@@ -31,7 +31,7 @@ function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/orders');
+      const response = await fetch('http://localhost:8000/api/orders');
       const data = await response.json();
       setOrders(data);
     } catch (error) {
@@ -45,7 +45,7 @@ function Orders() {
   const deleteOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to permanently delete this order?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/orders/${orderId}`, {
+        const response = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
           method: 'DELETE'
         });
         if (response.ok) {

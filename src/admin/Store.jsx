@@ -10,7 +10,7 @@ const ProductImageSlider = ({ product }) => {
 
   if (!hasMultiple) {
     return (
-      <img src={product.image?.startsWith('/uploads') ? `http://192.168.0.112:8000${product.image}` : product.image} alt={product.name} style={{ width: '100%', height: '100px', objectFit: 'contain', marginBottom: '12px', borderRadius: '8px' }} />
+      <img src={product.image?.startsWith('/uploads') ? `http://localhost:8000${product.image}` : product.image} alt={product.name} style={{ width: '100%', height: '100px', objectFit: 'contain', marginBottom: '12px', borderRadius: '8px' }} />
     );
   }
 
@@ -34,7 +34,7 @@ const ProductImageSlider = ({ product }) => {
         {allImages.map((img, i) => (
           <img 
             key={i} 
-            src={img.startsWith('/uploads') ? `http://192.168.0.112:8000${img}` : img} 
+            src={img.startsWith('/uploads') ? `http://localhost:8000${img}` : img} 
             alt={`${product.name} ${i}`} 
             style={{ flex: '0 0 100%', scrollSnapAlign: 'center', objectFit: 'contain', width: '100%', height: '100%' }} 
           />
@@ -101,27 +101,27 @@ function Store() {
   }, []);
 
   const fetchMainCategories = async () => {
-    const res = await fetch('http://192.168.0.112:8000/api/main-categories');
+    const res = await fetch('http://localhost:8000/api/main-categories');
     const data = await res.json();
     setMainCategories(data);
     if (!activeMainCategory && data.length > 0) setActiveMainCategory(data[0].id);
   };
 
   const fetchCategories = async () => {
-    const res = await fetch('http://192.168.0.112:8000/api/categories');
+    const res = await fetch('http://localhost:8000/api/categories');
     const data = await res.json();
     setCategories(data);
   };
 
   const fetchProducts = async () => {
-    const res = await fetch('http://192.168.0.112:8000/api/products');
+    const res = await fetch('http://localhost:8000/api/products');
     const data = await res.json();
     setProducts(data);
     setLoading(false);
   };
 
   const fetchDeals = async () => {
-    const res = await fetch('http://192.168.0.112:8000/api/deals');
+    const res = await fetch('http://localhost:8000/api/deals');
     const data = await res.json();
     setDeals(data);
   };
@@ -132,9 +132,9 @@ function Store() {
     if (!formData.get('name')) return;
 
     if (editingMainCategory.id) {
-      await fetch(`http://192.168.0.112:8000/api/main-categories/${editingMainCategory.id}`, { method: 'PUT', body: formData });
+      await fetch(`http://localhost:8000/api/main-categories/${editingMainCategory.id}`, { method: 'PUT', body: formData });
     } else {
-      await fetch(`http://192.168.0.112:8000/api/main-categories`, { method: 'POST', body: formData });
+      await fetch(`http://localhost:8000/api/main-categories`, { method: 'POST', body: formData });
     }
     setEditingMainCategory(null);
     fetchMainCategories();
@@ -142,7 +142,7 @@ function Store() {
 
   const handleDeleteMainCategory = async (id) => {
     if (window.confirm("Delete this main category and all its subcategories/products?")) {
-      await fetch(`http://192.168.0.112:8000/api/main-categories/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:8000/api/main-categories/${id}`, { method: 'DELETE' });
       fetchMainCategories();
       fetchCategories();
       fetchProducts();
@@ -164,9 +164,9 @@ function Store() {
     }
 
     if (editingCategory.id) {
-      await fetch(`http://192.168.0.112:8000/api/categories/${editingCategory.id}`, { method: 'PUT', body: formData });
+      await fetch(`http://localhost:8000/api/categories/${editingCategory.id}`, { method: 'PUT', body: formData });
     } else {
-      await fetch(`http://192.168.0.112:8000/api/categories`, { method: 'POST', body: formData });
+      await fetch(`http://localhost:8000/api/categories`, { method: 'POST', body: formData });
     }
     setEditingCategory(null);
     fetchCategories();
@@ -174,7 +174,7 @@ function Store() {
 
   const handleDeleteCategory = async (id, isSubSub = false) => {
     if (window.confirm("Delete this category and all its contents?")) {
-      await fetch(`http://192.168.0.112:8000/api/categories/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:8000/api/categories/${id}`, { method: 'DELETE' });
       fetchCategories();
       fetchProducts();
       if (!isSubSub && activeCategory === id) {
@@ -202,9 +202,9 @@ function Store() {
     }
 
     if (editingProduct.id) {
-      await fetch(`http://192.168.0.112:8000/api/products/${editingProduct.id}`, { method: 'PUT', body: formData });
+      await fetch(`http://localhost:8000/api/products/${editingProduct.id}`, { method: 'PUT', body: formData });
     } else {
-      await fetch(`http://192.168.0.112:8000/api/products`, { method: 'POST', body: formData });
+      await fetch(`http://localhost:8000/api/products`, { method: 'POST', body: formData });
     }
     setEditingProduct(null);
     setSelectedSizes([]);
@@ -213,7 +213,7 @@ function Store() {
 
   const handleDeleteProduct = async (id) => {
     if (window.confirm("Delete this product?")) {
-      await fetch(`http://192.168.0.112:8000/api/products/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:8000/api/products/${id}`, { method: 'DELETE' });
       fetchProducts();
     }
   };
@@ -225,9 +225,9 @@ function Store() {
     formData.set('in_stock', inStockVal);
 
     if (editingDeal.id) {
-      await fetch(`http://192.168.0.112:8000/api/deals/${editingDeal.id}`, { method: 'PUT', body: formData });
+      await fetch(`http://localhost:8000/api/deals/${editingDeal.id}`, { method: 'PUT', body: formData });
     } else {
-      await fetch(`http://192.168.0.112:8000/api/deals`, { method: 'POST', body: formData });
+      await fetch(`http://localhost:8000/api/deals`, { method: 'POST', body: formData });
     }
     setEditingDeal(null);
     fetchDeals();
@@ -235,7 +235,7 @@ function Store() {
 
   const handleDeleteDeal = async (id) => {
     if (window.confirm("Delete this deal?")) {
-      await fetch(`http://192.168.0.112:8000/api/deals/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:8000/api/deals/${id}`, { method: 'DELETE' });
       fetchDeals();
     }
   };
@@ -420,7 +420,7 @@ function Store() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
                   {currentDeals.map(p => (
                     <div key={p.id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
-                      <img src={p.image?.startsWith('/uploads') ? `http://192.168.0.112:8000${p.image}` : p.image} alt={p.name} style={{ width: '100%', height: '100px', objectFit: 'contain', marginBottom: '12px' }} />
+                      <img src={p.image?.startsWith('/uploads') ? `http://localhost:8000${p.image}` : p.image} alt={p.name} style={{ width: '100%', height: '100px', objectFit: 'contain', marginBottom: '12px' }} />
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '14px' }}>{p.name}</h4>
                       <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#64748b' }}>{p.quantity}</p>
                       

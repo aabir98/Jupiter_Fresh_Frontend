@@ -52,7 +52,7 @@ function OffersEvents() {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/announcements');
+      const response = await fetch('http://localhost:8000/api/announcements');
       if (response.ok) {
         setAnnouncements(await response.json());
       }
@@ -63,7 +63,7 @@ function OffersEvents() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/reviews');
+      const response = await fetch('http://localhost:8000/api/reviews');
       if (response.ok) {
         setReviews(await response.json());
       }
@@ -74,7 +74,7 @@ function OffersEvents() {
 
   const fetchBanners = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/banners');
+      const response = await fetch('http://localhost:8000/api/banners');
       if (response.ok) {
         setBanners(await response.json());
       }
@@ -85,7 +85,7 @@ function OffersEvents() {
 
   const fetchHubs = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/hubs');
+      const response = await fetch('http://localhost:8000/api/hubs');
       if (response.ok) {
         setHubs(await response.json());
       }
@@ -96,7 +96,7 @@ function OffersEvents() {
 
   const handleSaveHub = async (e) => {
     e.preventDefault();
-    const url = editingHub ? `http://192.168.0.112:8000/api/hubs/${editingHub.id}` : 'http://192.168.0.112:8000/api/hubs';
+    const url = editingHub ? `http://localhost:8000/api/hubs/${editingHub.id}` : 'http://localhost:8000/api/hubs';
     const method = editingHub ? 'PUT' : 'POST';
 
     try {
@@ -120,7 +120,7 @@ function OffersEvents() {
   const handleDeleteHub = async (id) => {
     if (window.confirm("Delete this hub?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/hubs/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8000/api/hubs/${id}`, { method: 'DELETE' });
         if (response.ok) fetchHubs();
       } catch (err) {
         console.error(err);
@@ -136,7 +136,7 @@ function OffersEvents() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/settings');
+      const response = await fetch('http://localhost:8000/api/settings');
       if (response.ok) {
         const data = await response.json();
         const f20 = data.find(s => s.key === 'FIRST20_ACTIVE');
@@ -152,7 +152,7 @@ function OffersEvents() {
   const toggleFirst20 = async () => {
     const newVal = !first20Active;
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/settings', {
+      const response = await fetch('http://localhost:8000/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: 'FIRST20_ACTIVE', value: newVal.toString() })
@@ -167,7 +167,7 @@ function OffersEvents() {
 
   const fetchOffers = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/offers');
+      const response = await fetch('http://localhost:8000/api/offers');
       if (response.ok) {
         const data = await response.json();
         setOffers(data);
@@ -180,7 +180,7 @@ function OffersEvents() {
   const handleSaveOffer = async (e) => {
     e.preventDefault();
     const isNewOffer = !editingOffer;
-    const url = editingOffer ? `http://192.168.0.112:8000/api/offers/${editingOffer.id}` : 'http://192.168.0.112:8000/api/offers';
+    const url = editingOffer ? `http://localhost:8000/api/offers/${editingOffer.id}` : 'http://localhost:8000/api/offers';
     const method = editingOffer ? 'PUT' : 'POST';
 
     try {
@@ -194,14 +194,14 @@ function OffersEvents() {
           const promoText = `${offerForm.code} - ${offerForm.event_name} - Get ${offerForm.discount_percent}% OFF!`;
           
           // Set as announcement
-          await fetch('http://192.168.0.112:8000/api/announcements', {
+          await fetch('http://localhost:8000/api/announcements', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: promoText })
           });
           
           // Send notification
-          await fetch('http://192.168.0.112:8000/api/admin/notifications', {
+          await fetch('http://localhost:8000/api/admin/notifications', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: promoText, is_active: true })
@@ -224,7 +224,7 @@ function OffersEvents() {
   const handleDeleteOffer = async (id) => {
     if (window.confirm("Delete this offer?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/offers/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8000/api/offers/${id}`, { method: 'DELETE' });
         if (response.ok) fetchOffers();
       } catch (err) {
         console.error(err);
@@ -250,7 +250,7 @@ function OffersEvents() {
 
   const handleSaveAnnouncement = async (e) => {
     e.preventDefault();
-    const url = editingAnnouncement ? `http://192.168.0.112:8000/api/announcements/${editingAnnouncement.id}` : 'http://192.168.0.112:8000/api/announcements';
+    const url = editingAnnouncement ? `http://localhost:8000/api/announcements/${editingAnnouncement.id}` : 'http://localhost:8000/api/announcements';
     const method = editingAnnouncement ? 'PUT' : 'POST';
 
     try {
@@ -272,7 +272,7 @@ function OffersEvents() {
   const handleDeleteAnnouncement = async (id) => {
     if (window.confirm("Delete this announcement?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/announcements/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8000/api/announcements/${id}`, { method: 'DELETE' });
         if (response.ok) fetchAnnouncements();
       } catch (err) {
         console.error(err);
@@ -300,7 +300,7 @@ function OffersEvents() {
   // --- REVIEWS HANDLERS ---
   const handleSaveReview = async (e) => {
     e.preventDefault();
-    const url = editingReview ? `http://192.168.0.112:8000/api/reviews/${editingReview.id}` : 'http://192.168.0.112:8000/api/reviews';
+    const url = editingReview ? `http://localhost:8000/api/reviews/${editingReview.id}` : 'http://localhost:8000/api/reviews';
     const method = editingReview ? 'PUT' : 'POST';
 
     try {
@@ -321,7 +321,7 @@ function OffersEvents() {
 
   const handleToggleFeatured = async (review) => {
     try {
-      const response = await fetch(`http://192.168.0.112:8000/api/reviews/${review.id}`, {
+      const response = await fetch(`http://localhost:8000/api/reviews/${review.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...review, is_featured: review.is_featured ? 0 : 1 })
@@ -335,7 +335,7 @@ function OffersEvents() {
   const handleDeleteReview = async (id) => {
     if (window.confirm("Delete this review?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/reviews/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8000/api/reviews/${id}`, { method: 'DELETE' });
         if (response.ok) fetchReviews();
       } catch (err) {
         console.error(err);
@@ -368,7 +368,7 @@ function OffersEvents() {
     formData.append('image', bannerFile);
 
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/banners', {
+      const response = await fetch('http://localhost:8000/api/banners', {
         method: 'POST',
         body: formData,
       });
@@ -387,7 +387,7 @@ function OffersEvents() {
 
   const handleToggleBannerApproved = async (banner) => {
     try {
-      const response = await fetch(`http://192.168.0.112:8000/api/banners/${banner.id}`, {
+      const response = await fetch(`http://localhost:8000/api/banners/${banner.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_approved: !banner.is_approved })
@@ -401,7 +401,7 @@ function OffersEvents() {
   const handleDeleteBanner = async (id) => {
     if (window.confirm("Delete this banner?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/banners/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8000/api/banners/${id}`, { method: 'DELETE' });
         if (response.ok) fetchBanners();
       } catch (err) {
         console.error(err);
@@ -584,7 +584,7 @@ function OffersEvents() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                   {banners.map(banner => (
                     <div key={banner.id} style={{ border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-                      <img src={`http://192.168.0.112:8000${banner.image}`} alt="Banner" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e2e8f0' }} />
+                      <img src={`http://localhost:8000${banner.image}`} alt="Banner" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e2e8f0' }} />
                       
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#475569' }}>

@@ -61,7 +61,7 @@ const OrderRatingWidget = ({ order, onReviewSubmitted }) => {
     }
     setSubmitting(true);
     try {
-      const response = await fetch(`http://192.168.0.112:8000/api/orders/${order.id}/rate`, {
+      const response = await fetch(`http://localhost:8000/api/orders/${order.id}/rate`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, review })
@@ -138,7 +138,7 @@ const DeliveryRatingWidget = ({ order, onReviewSubmitted }) => {
     if (!rating) return;
     setSubmitting(true);
     try {
-      const response = await fetch(`http://192.168.0.112:8000/api/orders/${order.id}/rate-delivery`, {
+      const response = await fetch(`http://localhost:8000/api/orders/${order.id}/rate-delivery`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating })
@@ -240,7 +240,7 @@ const ProductImageSlider = ({ product }) => {
 
   if (!hasMultiple) {
     return product.image ? (
-      <img src={product.image?.startsWith('/uploads') ? `http://192.168.0.112:8000${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
+      <img src={product.image?.startsWith('/uploads') ? `http://localhost:8000${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
     ) : (
       <span style={{ fontSize: '48px' }} className={product.in_stock === 0 ? 'greyed-out' : ''}>{product.emoji}</span>
     );
@@ -266,7 +266,7 @@ const ProductImageSlider = ({ product }) => {
         {allImages.map((img, i) => (
           <img
             key={i}
-            src={img.startsWith('/uploads') ? `http://192.168.0.112:8000${img}` : img}
+            src={img.startsWith('/uploads') ? `http://localhost:8000${img}` : img}
             alt={`${product.name} ${i}`}
             style={{ position: 'relative', flex: '0 0 100%', scrollSnapAlign: 'center', objectFit: 'cover', width: '100%', height: '100%', borderRadius: '16px', mixBlendMode: 'multiply' }}
             className={product.in_stock === 0 ? 'greyed-out' : ''}
@@ -424,7 +424,7 @@ function App() {
       });
 
       PushNotifications.addListener('registration', (token) => {
-        fetch('http://192.168.0.112:8000/api/device-tokens', {
+        fetch('http://localhost:8000/api/device-tokens', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: token.value })
@@ -451,7 +451,7 @@ function App() {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const res = await fetch('http://192.168.0.112:8000/api/home-feed');
+        const res = await fetch('http://localhost:8000/api/home-feed');
         const data = await res.json();
 
         const {
@@ -552,14 +552,14 @@ function App() {
   useEffect(() => {
     const fetchUserData = () => {
       if (user && user.email) {
-        fetch(`http://192.168.0.112:8000/api/addresses/${user.email}`)
+        fetch(`http://localhost:8000/api/addresses/${user.email}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) setSavedAddresses(data);
           })
           .catch(err => console.error("Error fetching addresses:", err));
 
-        fetch(`http://192.168.0.112:8000/api/user/notifications?email=${encodeURIComponent(user.email)}`)
+        fetch(`http://localhost:8000/api/user/notifications?email=${encodeURIComponent(user.email)}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) setUserNotifications(data);
@@ -571,7 +571,7 @@ function App() {
       }
 
       if (user && user.phone) {
-        fetch(`http://192.168.0.112:8000/api/orders/user/${user.phone}`)
+        fetch(`http://localhost:8000/api/orders/user/${user.phone}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) setPlacedOrders(data);
@@ -628,7 +628,7 @@ function App() {
   const handleDeleteAddress = async (id) => {
     if (window.confirm("Are you sure you want to delete this address?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/addresses/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8000/api/addresses/${id}`, { method: 'DELETE' });
         if (response.ok) {
           setSavedAddresses(savedAddresses.filter(addr => addr.id !== id));
           if (selectedAddressId === id) setSelectedAddressId(null);
@@ -661,7 +661,7 @@ function App() {
     try {
       if (saveAddressLabel.trim() && user.email) {
         const addressStr = `${deliveryDetails.building ? deliveryDetails.building + ', ' : ''}${deliveryDetails.street}, ${deliveryDetails.locality}, ${deliveryDetails.city}, ${deliveryDetails.state}`;
-        fetch('http://192.168.0.112:8000/api/addresses', {
+        fetch('http://localhost:8000/api/addresses', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -687,7 +687,7 @@ function App() {
         }).catch(err => console.error("Error saving address:", err));
       }
 
-      const response = await fetch('http://192.168.0.112:8000/api/orders', {
+      const response = await fetch('http://localhost:8000/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrder)
@@ -725,7 +725,7 @@ function App() {
   const cancelOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to cancel this order?")) {
       try {
-        const response = await fetch(`http://192.168.0.112:8000/api/orders/${orderId}`, {
+        const response = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -874,7 +874,7 @@ function App() {
   const categories = React.useMemo(() => {
     return visibleSubcategories.map(c => ({
       name: c.name,
-      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `http://192.168.0.112:8000${c.image}` : c.image) : '/category-icons/all.png'
+      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `http://localhost:8000${c.image}` : c.image) : '/category-icons/all.png'
     }));
   }, [visibleSubcategories]);
 
@@ -981,7 +981,7 @@ function App() {
   const categoryTabCategories = React.useMemo(() => {
     return categoryTabVisibleSubcategories.map(c => ({
       name: c.name,
-      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `http://192.168.0.112:8000${c.image}` : c.image) : '/category-icons/all.png'
+      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `http://localhost:8000${c.image}` : c.image) : '/category-icons/all.png'
     }));
   }, [categoryTabVisibleSubcategories]);
 
@@ -1010,7 +1010,7 @@ function App() {
   const handleNativeGoogleLogin = async () => {
     try {
       const user = await GoogleAuth.signIn();
-      const response = await fetch(`http://192.168.0.112:8000/api/customers/${user.email}`);
+      const response = await fetch(`http://localhost:8000/api/customers/${user.email}`);
       if (response.ok) {
         const customer = await response.json();
         setUser({ name: user.name, email: user.email, picture: user.imageUrl, phone: customer.phone });
@@ -1034,7 +1034,7 @@ function App() {
   const handleGoogleSuccess = async (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     try {
-      const response = await fetch(`http://192.168.0.112:8000/api/customers/${decoded.email}`);
+      const response = await fetch(`http://localhost:8000/api/customers/${decoded.email}`);
       if (response.ok) {
         const customer = await response.json();
         setUser({ name: decoded.name, email: decoded.email, picture: decoded.picture, phone: customer.phone });
@@ -1058,7 +1058,7 @@ function App() {
     const finalUser = { ...tempUser, phone: phoneInput };
 
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/customers', {
+      const response = await fetch('http://localhost:8000/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalUser)
@@ -1343,7 +1343,7 @@ function App() {
                         </div>
                       )}
                       {item.image ? (
-                        <img src={item.image?.startsWith('/uploads') ? `http://192.168.0.112:8000${item.image}` : item.image} alt={item.name} className={`product-image ${item.in_stock === 0 ? 'greyed-out' : ''}`} />
+                        <img src={item.image?.startsWith('/uploads') ? `http://localhost:8000${item.image}` : item.image} alt={item.name} className={`product-image ${item.in_stock === 0 ? 'greyed-out' : ''}`} />
                       ) : (
                         <span style={{ fontSize: '48px' }} className={item.in_stock === 0 ? 'greyed-out' : ''}>{item.emoji}</span>
                       )}
@@ -1881,7 +1881,7 @@ function App() {
                             </div>
                           )}
                           {product.image ? (
-                            <img src={product.image?.startsWith('/uploads') ? `http://192.168.0.112:8000${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
+                            <img src={product.image?.startsWith('/uploads') ? `http://localhost:8000${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
                           ) : (
                             <span style={{ fontSize: '48px' }} className={product.in_stock === 0 ? 'greyed-out' : ''}>{product.emoji}</span>
                           )}
@@ -1948,7 +1948,7 @@ function App() {
                     {banners.map((banner, idx) => (
                       <img
                         key={idx}
-                        src={`http://192.168.0.112:8000${banner.image}`}
+                        src={`http://localhost:8000${banner.image}`}
                         alt="Promo Banner"
                         style={{
                           flex: '0 0 100%',
@@ -2349,7 +2349,7 @@ function App() {
                   <div className="cart-items-section" style={{ padding: '0', backgroundColor: 'transparent', marginBottom: '24px' }}>
                     {cartDetails.items.map((item, idx) => (
                       <div key={idx} className="cart-item-row-new">
-                        <img src={item.image?.startsWith('/uploads') ? `http://192.168.0.112:8000${item.image}` : item.image} alt={item.name} className="cart-item-image" />
+                        <img src={item.image?.startsWith('/uploads') ? `http://localhost:8000${item.image}` : item.image} alt={item.name} className="cart-item-image" />
                         <div className="cart-item-info">
                           <h4 className="cart-item-name">
                             {item.name} {item.selectedSize && <span style={{ fontSize: '12px', color: '#64748b' }}>({item.selectedSize.toUpperCase()})</span>}
@@ -2994,7 +2994,7 @@ function App() {
                     zIndex: 10 - idx
                   }}>
                     {item.image ? (
-                      <img src={item.image.startsWith('/uploads') ? `http://192.168.0.112:8000${item.image}` : item.image} alt="item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={item.image.startsWith('/uploads') ? `http://localhost:8000${item.image}` : item.image} alt="item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <ShoppingBag size={20} color="var(--primary)" />
                     )}

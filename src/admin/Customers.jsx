@@ -18,7 +18,7 @@ function Customers() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('http://192.168.0.112:8000/api/customers');
+      const response = await fetch('http://localhost:8000/api/customers');
       const data = await response.json();
       setCustomers(data);
     } catch (error) {
@@ -32,7 +32,7 @@ function Customers() {
     setSelectedCustomer(customer);
     setOrdersLoading(true);
     try {
-      const response = await fetch(`http://192.168.0.112:8000/api/orders/user/${customer.phone}`);
+      const response = await fetch(`http://localhost:8000/api/orders/user/${customer.phone}`);
       const data = await response.json();
       setCustomerOrders(data);
     } catch (err) {

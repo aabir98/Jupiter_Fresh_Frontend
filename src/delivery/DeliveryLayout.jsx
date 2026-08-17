@@ -42,7 +42,7 @@ export default function DeliveryLayout() {
 
   useEffect(() => {
     if (!deliveryUser) {
-      fetch('http://192.168.0.112:8000/api/hubs')
+      fetch('http://localhost:8000/api/hubs')
         .then(res => res.json())
         .then(data => setHubs(data.filter(h => h.is_active)))
         .catch(err => console.error("Error fetching hubs:", err));
@@ -63,7 +63,7 @@ export default function DeliveryLayout() {
   const fetchOrders = () => {
     if (!deliveryUser) return;
 
-    fetch(`http://192.168.0.112:8000/api/delivery/orders/${deliveryUser.email}`)
+    fetch(`http://localhost:8000/api/delivery/orders/${deliveryUser.email}`)
       .then(res => res.json())
       .then(data => {
         setOrders(data);
@@ -110,7 +110,7 @@ export default function DeliveryLayout() {
     const { email, name, picture } = decoded;
 
     try {
-      const res = await fetch('http://192.168.0.112:8000/api/delivery/login', {
+      const res = await fetch('http://localhost:8000/api/delivery/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, picture })
@@ -136,7 +136,7 @@ export default function DeliveryLayout() {
     }
 
     try {
-      const res = await fetch('http://192.168.0.112:8000/api/delivery/login', {
+      const res = await fetch('http://localhost:8000/api/delivery/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...tempUser, phone, hub_id: parseInt(hubId) })

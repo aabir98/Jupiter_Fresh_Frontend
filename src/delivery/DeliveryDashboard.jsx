@@ -7,7 +7,7 @@ export default function DeliveryDashboard({ user, orders, loading, onRefresh }) 
       const payload = { status: newStatus };
       if (eta) payload.eta = eta;
 
-      const res = await fetch(`http://192.168.0.112:8000/api/orders/${orderId}/status`, {
+      const res = await fetch(`http://localhost:8000/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
