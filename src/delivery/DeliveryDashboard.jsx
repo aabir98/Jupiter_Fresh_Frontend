@@ -97,9 +97,14 @@ function OrderCard({ order, onUpdate }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-          <div style={{ backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '50%' }}>
-            <MapPin size={16} color="#64748b" />
-          </div>
+          <a 
+            href={order.deliveryDetails.lat && order.deliveryDetails.lng ? `https://www.google.com/maps/search/?api=1&query=${order.deliveryDetails.lat},${order.deliveryDetails.lng}` : '#'} 
+            target={order.deliveryDetails.lat && order.deliveryDetails.lng ? "_blank" : "_self"} 
+            rel="noopener noreferrer"
+            style={{ backgroundColor: '#e0f2fe', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            <MapPin size={16} color="#0284c7" />
+          </a>
           <div>
             <p style={{ margin: '0', fontSize: '13px', color: '#475569', lineHeight: '1.4' }}>
               {order.deliveryDetails.building && `${order.deliveryDetails.building}, `}
@@ -110,29 +115,45 @@ function OrderCard({ order, onUpdate }) {
             {order.deliveryDetails.landmark && (
               <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#94a3b8' }}>Landmark: {order.deliveryDetails.landmark}</p>
             )}
+            {order.deliveryDetails.lat && order.deliveryDetails.lng && (
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${order.deliveryDetails.lat},${order.deliveryDetails.lng}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ display: 'inline-block', marginTop: '6px', fontSize: '12px', color: 'var(--primary-green)', fontWeight: 'bold', textDecoration: 'none' }}
+              >
+                Open in Google Maps
+              </a>
+            )}
           </div>
         </div>
       </div>
 
       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
         {(!order.status || order.status === 'Placed') && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 12px', flex: 1 }}>
-              <Clock size={16} color="#64748b" style={{ marginRight: '8px' }} />
-              <input 
-                type="number" 
-                value={etaInput} 
-                onChange={e => setEtaInput(e.target.value)} 
-                placeholder="ETA (mins)"
-                style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14px' }}
-              />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 12px', flex: 1 }}>
+                <Clock size={16} color="#64748b" style={{ marginRight: '8px' }} />
+                <input 
+                  type="number" 
+                  value={etaInput} 
+                  onChange={e => setEtaInput(e.target.value)} 
+                  placeholder="ETA (mins)"
+                  style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14px' }}
+                />
+              </div>
+              <button 
+                onClick={handleSetEta}
+                disabled={Number(etaInput) > 59}
+                style={{ backgroundColor: Number(etaInput) > 59 ? '#cbd5e1' : 'var(--primary-green)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: Number(etaInput) > 59 ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Set ETA
+              </button>
             </div>
-            <button 
-              onClick={handleSetEta}
-              style={{ backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
-              Set ETA
-            </button>
+            {Number(etaInput) > 59 && (
+              <span style={{ color: '#0284c7', fontSize: '12px', paddingLeft: '4px' }}>ETA must be less than 60 mins</span>
+            )}
           </div>
         )}
 

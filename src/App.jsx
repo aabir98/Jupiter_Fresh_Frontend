@@ -2689,7 +2689,7 @@ function App() {
                           </div>
                           <div style={{ textAlign: 'center', marginTop: '8px' }}>
                             <a
-                              href={`https://wa.me/+919239606687?text=${encodeURIComponent(`Hi, my name is ${user?.name || 'Customer'}. My Order id is ${order.id} containing ${order.items.map(item => `${item.name}${item.selectedSize ? ` (${item.selectedSize.toUpperCase()})` : ''} x ${item.qty}`).join(', ')}.`)}`}
+                              href={`https://wa.me/+917908007745?text=${encodeURIComponent(`Hi, my name is ${user?.name || 'Customer'}. My Order id is ${order.id} containing ${order.items.map(item => `${item.name}${item.selectedSize ? ` (${item.selectedSize.toUpperCase()})` : ''} x ${item.qty}`).join(', ')}.`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{ fontSize: '13px', color: 'var(--primary-green)', textDecoration: 'underline', fontWeight: '600' }}
@@ -2915,7 +2915,7 @@ function App() {
         zIndex: 999,
       }}>
         <a
-          href="https://wa.me/+919239606687"
+          href="https://wa.me/+917908007745"
           target="_blank"
           rel="noopener noreferrer"
           style={{

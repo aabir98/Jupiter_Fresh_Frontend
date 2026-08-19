@@ -8,7 +8,7 @@ function AdminLogin({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === 'tajakart' && password === 'tajakart@2026') {
+    if (username === 'jupiterfresh' && password === 'jupiterfresh@2026') {
       setError('');
       onLogin();
     } else {

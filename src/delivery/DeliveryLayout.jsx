@@ -28,6 +28,10 @@ export default function DeliveryLayout() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const prevOrderIds = useRef(new Set());
   const [notificationPermission, setNotificationPermission] = useState('default');
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [viewedNotifIds, setViewedNotifIds] = useState(() => {
+    try { return JSON.parse(window.localStorage.getItem('deliveryViewedNotifs') || '[]'); } catch { return []; }
+  });
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -160,7 +164,22 @@ export default function DeliveryLayout() {
   };
 
   const activeTab = location.pathname.split('/').pop() || 'active';
-  const activeOrdersCount = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
+  const activeOrders = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+  const activeOrdersCount = activeOrders.length;
+  const unreadOrders = activeOrders.filter(o => !viewedNotifIds.includes(o.id));
+
+  const handleBellClick = () => {
+    if (!isNotificationOpen) {
+      setIsNotificationOpen(true);
+    } else {
+      setIsNotificationOpen(false);
+      if (unreadOrders.length > 0) {
+        const newViewed = [...viewedNotifIds, ...unreadOrders.map(o => o.id)];
+        setViewedNotifIds(newViewed);
+        window.localStorage.setItem('deliveryViewedNotifs', JSON.stringify(newViewed));
+      }
+    }
+  };
 
   if (!deliveryUser) {
     return (
@@ -232,24 +251,57 @@ export default function DeliveryLayout() {
       <div style={{ width: '100%', maxWidth: '480px', minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 0 20px rgba(0,0,0,0.1)' }}>
 
         {/* Global Header */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', backgroundColor: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 10 }}>
+        <header style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', backgroundColor: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 10 }}>
           <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>Jupiter Fresh Partner</h1>
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => navigate('/delivery/active')}>
+          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={handleBellClick}>
             <Bell size={24} color="#64748b" />
-            {activeOrdersCount > 0 && (
+            {unreadOrders.length > 0 && (
               <span style={{
                 position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: 'white',
                 fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '10px',
                 border: '2px solid white'
               }}>
-                {activeOrdersCount}
+                {unreadOrders.length}
               </span>
             )}
           </div>
+
+          {isNotificationOpen && (
+            <>
+              <div 
+                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 15 }} 
+                onClick={handleBellClick} 
+              />
+              <div style={{ position: 'absolute', top: '70px', right: '24px', width: '320px', maxWidth: 'calc(100vw - 48px)', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 20, maxHeight: '400px', overflowY: 'auto' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0, fontSize: '14px', color: '#1e293b' }}>Notifications</h3>
+                </div>
+                {activeOrders.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    No notifications
+                  </div>
+                ) : (
+                  <div>
+                    {activeOrders.map(order => {
+                      const isUnread = !viewedNotifIds.includes(order.id);
+                      return (
+                        <div key={order.id} style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', backgroundColor: isUnread ? '#eff6ff' : '#ffffff', position: 'relative' }}>
+                          {isUnread && <div style={{ position: 'absolute', top: '16px', left: '6px', width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%' }} />}
+                          <p style={{ margin: 0, fontSize: '13px', color: '#334155', lineHeight: '1.4', paddingLeft: isUnread ? '8px' : '0' }}>
+                            <strong>{order.deliveryDetails?.name || 'Customer'}</strong> placed an order of <strong>₹{order.grandTotal}</strong> on {order.date}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </header>
 
         {/* Main Content Area */}
-        <main style={{ flex: 1, padding: '16px', overflowY: 'auto', paddingBottom: '80px' }}>
+        <main style={{ flex: 1, padding: '80px 16px', overflowY: 'auto' }}>
           <Routes>
             <Route path="/active" element={<DeliveryDashboard user={deliveryUser} orders={orders} loading={loadingOrders} onRefresh={fetchOrders} />} />
             <Route path="/history" element={<DeliveryHistory user={deliveryUser} orders={orders} loading={loadingOrders} />} />
@@ -259,7 +311,7 @@ export default function DeliveryLayout() {
         </main>
 
         {/* Bottom Navigation */}
-        <nav style={{ position: 'absolute', bottom: 0, width: '100%', backgroundColor: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '12px 0', boxShadow: '0 -2px 10px rgba(0,0,0,0.05)', borderTop: '1px solid #e2e8f0', zIndex: 10 }}>
+        <nav style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', backgroundColor: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '12px 0', boxShadow: '0 -2px 10px rgba(0,0,0,0.05)', borderTop: '1px solid #e2e8f0', zIndex: 10 }}>
           <div onClick={() => navigate('/delivery/active')} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'active' || activeTab === 'delivery' ? 'var(--primary-green)' : '#94a3b8' }}>
             <Home size={24} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Active</span>

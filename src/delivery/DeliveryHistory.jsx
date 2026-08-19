@@ -39,14 +39,29 @@ export default function DeliveryHistory({ user, orders, loading }) {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '50%' }}>
-                  <MapPin size={16} color="#64748b" />
-                </div>
+                <a 
+                  href={order.deliveryDetails.lat && order.deliveryDetails.lng ? `https://www.google.com/maps/search/?api=1&query=${order.deliveryDetails.lat},${order.deliveryDetails.lng}` : '#'} 
+                  target={order.deliveryDetails.lat && order.deliveryDetails.lng ? "_blank" : "_self"} 
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: '#e0f2fe', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                >
+                  <MapPin size={16} color="#0284c7" />
+                </a>
                 <div>
                   <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>{order.deliveryDetails.name}</p>
                   <p style={{ margin: '0', fontSize: '13px', color: '#64748b', lineHeight: '1.4' }}>
                     {order.deliveryDetails.city}
                   </p>
+                  {order.deliveryDetails.lat && order.deliveryDetails.lng && (
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${order.deliveryDetails.lat},${order.deliveryDetails.lng}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-block', marginTop: '6px', fontSize: '12px', color: 'var(--primary-green)', fontWeight: 'bold', textDecoration: 'none' }}
+                    >
+                      Open in Google Maps
+                    </a>
+                  )}
                 </div>
               </div>
 
