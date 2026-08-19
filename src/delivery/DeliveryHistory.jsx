@@ -73,7 +73,7 @@ export default function DeliveryHistory({ user, orders, loading }) {
                 
                 {order.status === 'Delivered' && (
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>Customer Rating</span>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>Customer Rating & Review</span>
                     <div style={{ display: 'flex', gap: '2px', marginTop: '2px', justifyContent: 'flex-end' }}>
                       {order.delivery_partner_rating ? (
                         [1, 2, 3, 4, 5].map(star => (
@@ -83,6 +83,11 @@ export default function DeliveryHistory({ user, orders, loading }) {
                         <span style={{ fontSize: '13px', color: '#94a3b8', fontStyle: 'italic' }}>Not rated yet</span>
                       )}
                     </div>
+                    {order.delivery_partner_review && (
+                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#475569', fontStyle: 'italic', textAlign: 'right', maxWidth: '200px' }}>
+                        "{order.delivery_partner_review}"
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

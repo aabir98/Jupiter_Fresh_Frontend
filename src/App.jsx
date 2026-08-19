@@ -119,17 +119,21 @@ const OrderRatingWidget = ({ order, onReviewSubmitted }) => {
 const DeliveryRatingWidget = ({ order, onReviewSubmitted }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [review, setReview] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   if (order.delivery_partner_rating) {
     return (
       <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#334155' }}>You Rated the Delivery Partner</h4>
-        <div style={{ display: 'flex', gap: '4px' }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#334155' }}>Your Review for Delivery Partner</h4>
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
           {[1, 2, 3, 4, 5].map(star => (
             <span key={star} style={{ color: star <= order.delivery_partner_rating ? '#eab308' : '#cbd5e1', fontSize: '16px' }}>★</span>
           ))}
         </div>
+        {order.delivery_partner_review && (
+          <p style={{ margin: '0', fontSize: '13px', color: '#475569', fontStyle: 'italic' }}>"{order.delivery_partner_review}"</p>
+        )}
       </div>
     );
   }
@@ -141,10 +145,10 @@ const DeliveryRatingWidget = ({ order, onReviewSubmitted }) => {
       const response = await fetch(`http://localhost:8000/api/orders/${order.id}/rate-delivery`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating })
+        body: JSON.stringify({ rating, review })
       });
       if (response.ok) {
-        onReviewSubmitted(order.id, rating);
+        onReviewSubmitted(order.id, rating, review);
       }
     } catch (err) {
       console.error(err);
@@ -154,7 +158,7 @@ const DeliveryRatingWidget = ({ order, onReviewSubmitted }) => {
 
   return (
     <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#fff7ed', borderRadius: '8px', border: '1px solid rgba(234, 88, 12, 0.2)' }}>
-      <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#ea580c' }}>Rate the Delivery Partner</h4>
+      <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#ea580c' }}>Rate & Review Delivery Partner</h4>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
         {[1, 2, 3, 4, 5].map(star => (
           <span
@@ -173,12 +177,18 @@ const DeliveryRatingWidget = ({ order, onReviewSubmitted }) => {
           </span>
         ))}
       </div>
+      <textarea
+        placeholder="Write a review for the delivery partner (optional)..."
+        value={review}
+        onChange={(e) => setReview(e.target.value)}
+        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', minHeight: '60px', marginBottom: '8px', resize: 'vertical', boxSizing: 'border-box' }}
+      />
       <button
         onClick={submitReview}
         disabled={submitting || !rating}
         style={{ width: '100%', backgroundColor: rating ? '#ea580c' : '#fdba74', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: rating ? 'pointer' : 'not-allowed', fontSize: '13px', boxSizing: 'border-box' }}
       >
-        {submitting ? 'Submitting...' : 'Submit Rating'}
+        {submitting ? 'Submitting...' : 'Submit Rating & Review'}
       </button>
     </div>
   );
@@ -716,9 +726,9 @@ function App() {
     ));
   };
 
-  const handleDeliveryReviewSubmitted = (orderId, delivery_partner_rating) => {
+  const handleDeliveryReviewSubmitted = (orderId, delivery_partner_rating, delivery_partner_review) => {
     setPlacedOrders(placedOrders.map(o =>
-      o.id === orderId ? { ...o, delivery_partner_rating } : o
+      o.id === orderId ? { ...o, delivery_partner_rating, delivery_partner_review } : o
     ));
   };
 
@@ -2648,6 +2658,18 @@ function App() {
                         {order.dp_name && (
                           <div style={{ backgroundColor: '#f8fafc', color: '#334155', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #e2e8f0' }}>
                             <User size={16} color="#64748b" /> Delivery Partner: {order.dp_name} ({order.dp_phone})
+                          </div>
+                        )}
+
+                        {order.delivery_pin && order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                          <div style={{ backgroundColor: '#fffbeb', color: '#b45309', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '600', border: '1px solid #fde68a' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Shield size={16} color="#d97706" />
+                              <span>Delivery PIN:</span>
+                            </div>
+                            <span style={{ fontSize: '16px', fontWeight: '800', letterSpacing: '2px', backgroundColor: 'white', padding: '2px 10px', borderRadius: '6px', border: '1px solid #f59e0b', color: '#b45309' }}>
+                              {order.delivery_pin}
+                            </span>
                           </div>
                         )}
 

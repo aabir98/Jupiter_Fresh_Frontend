@@ -241,7 +241,12 @@ function Orders() {
                     <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#0c4a6e' }}>Phone: {order.dp_phone}</p>
                     {order.eta && <p style={{ margin: '0', fontSize: '13px', color: '#0c4a6e', fontWeight: 'bold' }}>ETA: {order.eta}</p>}
                     {order.delivery_partner_rating && (
-                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#0c4a6e' }}>Customer Rated DP: {order.delivery_partner_rating} ★</p>
+                      <div>
+                        <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#0c4a6e', fontWeight: 'bold' }}>Customer Rated DP: {order.delivery_partner_rating} ★</p>
+                        {order.delivery_partner_review && (
+                          <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#0369a1', fontStyle: 'italic' }}>Review: "{order.delivery_partner_review}"</p>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

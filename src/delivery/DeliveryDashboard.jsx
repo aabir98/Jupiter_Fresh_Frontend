@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Package, Clock, CheckCircle, User } from 'lucide-react';
+import { MapPin, Phone, Package, Clock, CheckCircle, User, ShieldAlert } from 'lucide-react';
 
 export default function DeliveryDashboard({ user, orders, loading, onRefresh }) {
-  const updateOrderStatus = async (orderId, newStatus, eta = null) => {
+  const updateOrderStatus = async (orderId, newStatus, eta = null, pin = null) => {
     try {
       const payload = { status: newStatus };
       if (eta) payload.eta = eta;
+      if (pin) payload.pin = pin;
 
       const res = await fetch(`http://localhost:8000/api/orders/${orderId}/status`, {
         method: 'PATCH',
@@ -14,12 +15,17 @@ export default function DeliveryDashboard({ user, orders, loading, onRefresh }) 
       });
       if (res.ok) {
         if (onRefresh) onRefresh();
+        return { success: true };
       } else {
-        alert("Failed to update order status.");
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.detail || "Failed to update order status.";
+        alert(errMsg);
+        return { success: false, error: errMsg };
       }
     } catch (err) {
       console.error(err);
       alert("Network error.");
+      return { success: false, error: "Network error." };
     }
   };
 
@@ -57,6 +63,9 @@ export default function DeliveryDashboard({ user, orders, loading, onRefresh }) 
 
 function OrderCard({ order, onUpdate }) {
   const [etaInput, setEtaInput] = useState('');
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [submittingPin, setSubmittingPin] = useState(false);
   
   const handleSetEta = () => {
     if (!etaInput) {
@@ -65,6 +74,20 @@ function OrderCard({ order, onUpdate }) {
     }
     const etaFormatted = `${etaInput} mins`;
     onUpdate(order.id, 'On the way to Hub', etaFormatted);
+  };
+
+  const handleConfirmDelivery = async () => {
+    if (!pinInput || pinInput.length !== 4) {
+      setPinError("Please enter a 4-digit PIN.");
+      return;
+    }
+    setPinError('');
+    setSubmittingPin(true);
+    const res = await onUpdate(order.id, 'Delivered', null, pinInput);
+    setSubmittingPin(false);
+    if (res && !res.success) {
+      setPinError(res.error || "Incorrect PIN. Please ask customer for correct PIN.");
+    }
   };
 
   return (
@@ -176,12 +199,61 @@ function OrderCard({ order, onUpdate }) {
         )}
 
         {order.status === 'Arrived' && (
-          <button 
-            onClick={() => onUpdate(order.id, 'Delivered')}
-            style={{ width: '100%', backgroundColor: '#16a34a', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-          >
-            <CheckCircle size={18} /> Mark as Delivered
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ backgroundColor: '#fff7ed', border: '1px solid #ffedd5', padding: '12px', borderRadius: '8px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ea580c', marginBottom: '6px' }}>
+                Enter Customer's 4-Digit Delivery PIN
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="text" 
+                  maxLength={4}
+                  value={pinInput} 
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    setPinInput(val);
+                    if (pinError) setPinError('');
+                  }}
+                  placeholder="4-digit PIN"
+                  style={{ 
+                    flex: 1, 
+                    padding: '10px 12px', 
+                    borderRadius: '8px', 
+                    border: pinError ? '2px solid #ef4444' : '1px solid #cbd5e1', 
+                    fontSize: '16px', 
+                    fontWeight: 'bold', 
+                    letterSpacing: '3px',
+                    textAlign: 'center',
+                    outline: 'none'
+                  }}
+                />
+                <button 
+                  onClick={handleConfirmDelivery}
+                  disabled={submittingPin || pinInput.length !== 4}
+                  style={{ 
+                    backgroundColor: pinInput.length === 4 ? '#16a34a' : '#cbd5e1', 
+                    color: 'white', 
+                    border: 'none', 
+                    padding: '10px 16px', 
+                    borderRadius: '8px', 
+                    fontWeight: 'bold', 
+                    cursor: pinInput.length === 4 ? 'pointer' : 'not-allowed', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <CheckCircle size={18} /> {submittingPin ? 'Verifying...' : 'Confirm Delivery'}
+                </button>
+              </div>
+              {pinError && (
+                <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#ef4444', fontWeight: 'bold' }}>
+                  {pinError}
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
