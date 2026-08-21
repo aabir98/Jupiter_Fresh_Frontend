@@ -30,9 +30,89 @@ function useLocalStorage(key, initialValue) {
 
   return [storedValue, setStoredValue];
 }
-import { Search, ChevronDown, User, Heart, ShoppingBag, MapPin, Grid, PlayCircle, Tag, Zap, ChevronUp, ShoppingCart, Leaf, Timer, Shield, Home, ArrowLeft, X, Bell, ChevronRight, Menu } from 'lucide-react';
+import { Search, ChevronDown, User, Heart, ShoppingBag, MapPin, Grid, PlayCircle, Tag, Zap, ChevronUp, ShoppingCart, Leaf, Timer, Shield, Home, ArrowLeft, X, Bell, ChevronRight, Menu, Store, Truck } from 'lucide-react';
 
 // categoryData has been moved to the backend database
+
+const OrderProgressTracker = ({ order }) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (order.status === 'Arrived' || order.status === 'Delivered') {
+      setProgress(100);
+      return;
+    }
+    
+    if (order.status === 'On the way' && order.picked_up_at && order.eta) {
+      const etaMatch = order.eta.match(/(\d+)/);
+      if (!etaMatch) return;
+      const etaMins = parseInt(etaMatch[1]);
+      const etaMs = etaMins * 60 * 1000;
+      const startTime = new Date(order.picked_up_at).getTime();
+      
+      const updateProgress = () => {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        let pct = (elapsed / etaMs) * 100;
+        if (pct < 0) pct = 0;
+        if (pct > 90) pct = 90;
+        setProgress(pct);
+      };
+      
+      updateProgress();
+      const interval = setInterval(updateProgress, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [order.status, order.picked_up_at, order.eta]);
+
+  return (
+    <div style={{ margin: '16px 0', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+      <p style={{ margin: '0 0 20px 0', fontSize: '13px', fontWeight: 'bold', color: '#475569', textAlign: 'center' }}>
+        {order.status === 'Arrived' || order.status === 'Delivered' 
+          ? 'Delivery Partner has arrived!' 
+          : 'Delivery Partner is on the way'}
+      </p>
+      
+      <div style={{ position: 'relative', height: '40px', display: 'flex', alignItems: 'center' }}>
+        {/* Background Line */}
+        <div style={{ position: 'absolute', left: '16px', right: '16px', height: '4px', backgroundColor: '#cbd5e1', borderRadius: '2px', zIndex: 1 }}></div>
+        
+        {/* Active Line */}
+        <div style={{ position: 'absolute', left: '16px', right: '16px', height: '4px', zIndex: 2 }}>
+           <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#ea580c', borderRadius: '2px', transition: 'width 1s linear' }}></div>
+        </div>
+        
+        {/* Start Hub Icon */}
+        <div style={{ position: 'absolute', left: 0, zIndex: 3, backgroundColor: 'white', borderRadius: '50%', border: '2px solid #cbd5e1', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+          <Store size={18} color="#64748b" />
+        </div>
+        
+        {/* End Home Icon */}
+        <div style={{ position: 'absolute', right: 0, zIndex: 3, backgroundColor: 'white', borderRadius: '50%', border: progress === 100 ? '2px solid #ea580c' : '2px solid #cbd5e1', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', transition: 'border-color 0.3s' }}>
+          <Home size={18} color={progress === 100 ? '#ea580c' : '#64748b'} style={{ transition: 'color 0.3s' }} />
+        </div>
+
+        {/* Moving Truck */}
+        <div style={{ position: 'absolute', left: '16px', right: '16px', top: '50%', zIndex: 4 }}>
+          <div style={{ 
+            position: 'absolute', 
+            left: `${progress}%`, 
+            top: 0,
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#ea580c', 
+            borderRadius: '50%', 
+            boxShadow: '0 2px 4px rgba(234, 88, 12, 0.3)',
+            transition: 'left 1s linear',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '28px', height: '28px', boxSizing: 'border-box'
+          }}>
+            <Truck size={16} color="white" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const OrderRatingWidget = ({ order, onReviewSubmitted }) => {
   const [rating, setRating] = useState(0);
@@ -356,6 +436,28 @@ function App() {
   const [featuredReviews, setFeaturedReviews] = useState([]);
   const [banners, setBanners] = useState([]);
   const bannerScrollRef = useRef(null);
+  const promoBannerScrollRef = useRef(null);
+  const [dismissedRatings, setDismissedRatings] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('dismissedRatings')) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const unratedOrder = useMemo(() => {
+    return placedOrders.find(o => 
+      o.status === 'Delivered' && 
+      (!o.rating || !o.delivery_partner_rating) && 
+      !dismissedRatings.includes(o.id)
+    );
+  }, [placedOrders, dismissedRatings]);
+
+  const dismissRating = (orderId) => {
+    const updated = [...dismissedRatings, orderId];
+    setDismissedRatings(updated);
+    localStorage.setItem('dismissedRatings', JSON.stringify(updated));
+  };
 
   const [currentHeroBannerIndex, setCurrentHeroBannerIndex] = useState(0);
   const touchStartX = useRef(0);
@@ -558,6 +660,23 @@ function App() {
     return () => clearInterval(interval);
   }, [banners]);
 
+  // Auto-slide Promotional Banners Every 5 seconds
+  useEffect(() => {
+    if (activeTab !== 'home') return;
+
+    const interval = setInterval(() => {
+      if (promoBannerScrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = promoBannerScrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          promoBannerScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          promoBannerScrollRef.current.scrollBy({ left: clientWidth, behavior: 'smooth' });
+        }
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
   // Handle Search InputOrders and Addresses from Backend
   useEffect(() => {
     const fetchUserData = () => {
@@ -655,8 +774,18 @@ function App() {
       return;
     }
 
+    if (!deliveryDetails.lat || !deliveryDetails.lng) {
+      alert("Please set your location using the map or 'Get Current Location' button.");
+      return;
+    }
+
     if (!deliveryDetails.building) {
       alert("Please fill in your Building Name / House No.");
+      return;
+    }
+
+    if (!deliveryDetails.city || !deliveryDetails.city.trim()) {
+      alert("Please fill in your City.");
       return;
     }
 
@@ -710,7 +839,7 @@ function App() {
         setCouponCode('');
         setSaveAddressLabel('');
         setAddingNewAddress(false);
-        setActiveTab('home');
+        setActiveTab('orders');
       } else {
         alert("Failed to place order.");
       }
@@ -1666,9 +1795,10 @@ function App() {
               )}
 
               {/* Promotional Banners */}
-              <div className="hide-scrollbar" style={{
+              <div ref={promoBannerScrollRef} className="hide-scrollbar" style={{
                 display: 'flex',
                 overflowX: 'auto',
+                scrollBehavior: 'smooth',
                 gap: '16px',
                 padding: '0',
                 margin: '-8px 16px 8px 16px',
@@ -2626,8 +2756,12 @@ function App() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {userOrders.map((order) => (
-                      <div key={order.id} className="order-card" style={{ backgroundColor: 'var(--white)', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    {(() => {
+                      const activeOrdersList = userOrders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+                      const pastOrdersList = userOrders.filter(o => o.status === 'Delivered' || o.status === 'Cancelled');
+                      
+                      const renderOrderCard = (order) => (
+                        <div key={order.id} className="order-card" style={{ backgroundColor: 'var(--white)', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
                           <div>
                             <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>{order.id}</span>
@@ -2655,10 +2789,16 @@ function App() {
                             <Zap size={16} color="#eab308" /> Whoosh!! the order is delivered in {order.eta}
                           </div>
                         )}
-                        {order.dp_name && (
+                        {order.dp_name ? (
                           <div style={{ backgroundColor: '#f8fafc', color: '#334155', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #e2e8f0' }}>
                             <User size={16} color="#64748b" /> Delivery Partner: {order.dp_name} ({order.dp_phone})
                           </div>
+                        ) : (
+                          order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                            <div style={{ backgroundColor: '#fff7ed', color: '#c2410c', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #ffedd5' }}>
+                              <Timer size={16} color="#ea580c" /> Waiting for a delivery partner...
+                            </div>
+                          )
                         )}
 
                         {order.delivery_pin && order.status !== 'Delivered' && order.status !== 'Cancelled' && (
@@ -2671,6 +2811,10 @@ function App() {
                               {order.delivery_pin}
                             </span>
                           </div>
+                        )}
+
+                        {['On the way', 'Arrived', 'Delivered'].includes(order.status) && (
+                          <OrderProgressTracker order={order} />
                         )}
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
@@ -2727,7 +2871,30 @@ function App() {
                           )}
                         </div>
                       </div>
-                    ))}
+                    );
+
+                    return (
+                      <>
+                        {activeOrdersList.length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '20px', fontWeight: '800' }}>Active Orders</h3>
+                            {activeOrdersList.map(renderOrderCard)}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--white)', padding: '16px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                            <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '18px', fontWeight: '800' }}>Active Orders</h3>
+                            <p style={{ color: 'var(--gray-text)', fontSize: '14px', margin: '0' }}>No active orders at the moment.</p>
+                          </div>
+                        )}
+                        {pastOrdersList.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: activeOrdersList.length > 0 ? '24px' : '0' }}>
+                            <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '20px', fontWeight: '800' }}>Past Orders</h3>
+                            {pastOrdersList.map(renderOrderCard)}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                   </div>
                 )}
               </div>
@@ -3036,6 +3203,33 @@ function App() {
       )}
 
 
+      {/* Proactive Rating Modal */}
+      {unratedOrder && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '400px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '20px', color: '#0f172a', fontWeight: '800' }}>Rate your experience!</h3>
+              <button onClick={() => dismissRating(unratedOrder.id)} style={{ background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer', color: '#94a3b8', padding: '0', lineHeight: 1 }}>×</button>
+            </div>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#475569', lineHeight: '1.5' }}>
+              Your order <strong>#{unratedOrder.id}</strong> has been delivered. Please take a moment to rate it!
+            </p>
+            
+            <OrderRatingWidget order={unratedOrder} onReviewSubmitted={(id, rating, review) => {
+              setPlacedOrders(prev => prev.map(o => o.id === id ? { ...o, rating, review } : o));
+            }} />
+
+            <DeliveryRatingWidget order={unratedOrder} onReviewSubmitted={(id, rating, review) => {
+              setPlacedOrders(prev => prev.map(o => o.id === id ? { ...o, delivery_partner_rating: rating, delivery_partner_review: review } : o));
+            }} />
+
+            <button onClick={() => dismissRating(unratedOrder.id)} style={{ width: '100%', marginTop: '20px', padding: '14px', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>
+              Skip for now
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Nav */}
       <div className="bottom-nav">
         <div className={`nav-tab ${activeTab === 'home' ? 'active' : ''}`} onClick={() => { setActiveTab('home'); }}>
@@ -3046,8 +3240,22 @@ function App() {
           <Grid size={24} />
           <span>Category</span>
         </div>
-        <div className={`nav-tab ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
-          <ShoppingBag size={24} />
+        <div className={`nav-tab ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')} style={{ position: 'relative' }}>
+          <div style={{ position: 'relative' }}>
+            <ShoppingBag size={24} />
+            {userOrders.some(o => o.status !== 'Delivered' && o.status !== 'Cancelled') && (
+              <span style={{
+                position: 'absolute',
+                top: '-2px',
+                right: '-2px',
+                width: '10px',
+                height: '10px',
+                backgroundColor: '#ef4444',
+                borderRadius: '50%',
+                border: '2px solid white'
+              }}></span>
+            )}
+          </div>
           <span>My Orders</span>
         </div>
         <div className={`nav-tab ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>

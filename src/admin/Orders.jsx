@@ -4,6 +4,7 @@ import { generateInvoice } from '../utils/generateInvoice';
 
 function Orders() {
   const [orders, setOrders] = useState([]);
+  const [hubs, setHubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   
@@ -12,6 +13,14 @@ function Orders() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
   const [ratingFilter, setRatingFilter] = useState('All');
+  const [hubFilter, setHubFilter] = useState('All');
+
+  // Manual Assign State
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignOrderId, setAssignOrderId] = useState(null);
+  const [assignHubId, setAssignHubId] = useState(null);
+  const [deliveryPersonnel, setDeliveryPersonnel] = useState([]);
+  const [selectedDpId, setSelectedDpId] = useState('');
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -23,11 +32,25 @@ function Orders() {
 
   useEffect(() => {
     fetchOrders();
+    fetchHubs();
 
-    const handleRefresh = () => fetchOrders();
+    const handleRefresh = () => {
+      fetchOrders();
+      fetchHubs();
+    };
     window.addEventListener('adminDataRefresh', handleRefresh);
     return () => window.removeEventListener('adminDataRefresh', handleRefresh);
   }, []);
+
+  const fetchHubs = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/hubs');
+      const data = await response.json();
+      setHubs(data);
+    } catch (error) {
+      console.error("Error fetching hubs:", error);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -38,6 +61,41 @@ function Orders() {
       console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openAssignModal = async (orderId, hubId) => {
+    setAssignOrderId(orderId);
+    setAssignHubId(hubId);
+    setAssignModalOpen(true);
+    setSelectedDpId('');
+    try {
+      const response = await fetch(`http://localhost:8000/api/delivery-personnel/hub/${hubId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDeliveryPersonnel(data);
+      }
+    } catch (error) {
+      console.error("Error fetching delivery personnel:", error);
+    }
+  };
+
+  const handleManualAssign = async () => {
+    if (!selectedDpId) return;
+    try {
+      const response = await fetch(`http://localhost:8000/api/orders/${assignOrderId}/assign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delivery_partner_id: parseInt(selectedDpId) })
+      });
+      if (response.ok) {
+        setAssignModalOpen(false);
+        fetchOrders();
+      } else {
+        alert("Failed to assign order");
+      }
+    } catch (error) {
+      console.error("Error assigning order:", error);
     }
   };
 
@@ -62,7 +120,9 @@ function Orders() {
 
   const getStatusColor = (status) => {
     if (status === 'Delivered') return { bg: '#dcfce7', text: '#16a34a' };
-    if (status === 'Picked Up') return { bg: '#fef9c3', text: '#ca8a04' };
+    if (status === 'Arrived') return { bg: '#ccfbf1', text: '#0d9488' };
+    if (status === 'On the way') return { bg: '#e0e7ff', text: '#4338ca' };
+    if (status === 'On the way to Hub') return { bg: '#ffedd5', text: '#c2410c' };
     return { bg: '#f0f8ff', text: 'var(--primary-green)' };
   };
 
@@ -88,7 +148,10 @@ function Orders() {
     // Rating match
     const matchesRating = ratingFilter === 'All' || order.rating === parseInt(ratingFilter);
 
-    return matchesSearch && matchesStatus && matchesDate && matchesRating;
+    // Hub match
+    const matchesHub = hubFilter === 'All' || order.hub_id === parseInt(hubFilter);
+
+    return matchesSearch && matchesStatus && matchesDate && matchesRating && matchesHub;
   });
 
   return (
@@ -112,7 +175,9 @@ function Orders() {
           >
             <option value="All">All Statuses</option>
             <option value="Placed">Placed</option>
-            <option value="Picked Up">Picked Up</option>
+            <option value="On the way to Hub">On the way to Hub</option>
+            <option value="On the way">On the way</option>
+            <option value="Arrived">Arrived</option>
             <option value="Delivered">Delivered</option>
           </select>
           
@@ -129,6 +194,17 @@ function Orders() {
             <option value="1">1 Star</option>
           </select>
           
+          <select 
+            value={hubFilter} 
+            onChange={(e) => setHubFilter(e.target.value)}
+            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white', fontSize: '14px' }}
+          >
+            <option value="All">All Hubs</option>
+            {hubs.map(hub => (
+              <option key={hub.id} value={hub.id}>{hub.name}</option>
+            ))}
+          </select>
+
           <input 
             type="date" 
             value={dateFilter}
@@ -136,9 +212,9 @@ function Orders() {
             style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: 'white', fontSize: '14px' }}
           />
           
-          {(searchQuery || statusFilter !== 'All' || dateFilter || ratingFilter !== 'All') && (
+          {(searchQuery || statusFilter !== 'All' || dateFilter || ratingFilter !== 'All' || hubFilter !== 'All') && (
             <button 
-              onClick={() => { setSearchQuery(''); setStatusFilter('All'); setDateFilter(''); setRatingFilter('All'); }}
+              onClick={() => { setSearchQuery(''); setStatusFilter('All'); setDateFilter(''); setRatingFilter('All'); setHubFilter('All'); }}
               style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
             >
               Clear
@@ -192,6 +268,11 @@ function Orders() {
                       <span> {order.deliveryDetails?.address || 'N/A'} {order.deliveryDetails?.landmark ? `(${order.deliveryDetails.landmark})` : ''}</span>
                     )}
                   </div>
+                  {order.hub_name && (
+                    <div style={{ margin: '8px 0 4px 0', fontSize: '13px', color: '#475569' }}>
+                      <strong>Assigned Hub:</strong> {order.hub_name}
+                    </div>
+                  )}
                   {order.deliveryDetails?.lat && order.deliveryDetails?.lng && (
                     <a 
                       href={`https://www.google.com/maps/search/?api=1&query=${order.deliveryDetails.lat},${order.deliveryDetails.lng}`} 
@@ -234,7 +315,7 @@ function Orders() {
                   </div>
                 )}
                 
-                {order.dp_name && (
+                {order.dp_name ? (
                   <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: '#e0f2fe', borderRadius: '8px' }}>
                     <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#0369a1' }}>Delivery Partner</h4>
                     <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#0c4a6e', fontWeight: 'bold' }}>{order.dp_name}</p>
@@ -248,6 +329,17 @@ function Orders() {
                         )}
                       </div>
                     )}
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: '#fff7ed', borderRadius: '8px', border: '1px solid #ffedd5' }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#c2410c' }}>Delivery Partner</h4>
+                    <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#ea580c', fontWeight: 'bold' }}>Not Assigned (In Queue)</p>
+                    <button 
+                      onClick={() => openAssignModal(order.id, order.hub_id)}
+                      style={{ padding: '6px 12px', backgroundColor: '#f97316', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                    >
+                      Assign Manually
+                    </button>
                   </div>
                 )}
 
@@ -272,6 +364,42 @@ function Orders() {
           </div>
         )}
       </div>
+
+      {assignModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', width: '400px', maxWidth: '90%' }}>
+            <h3 style={{ margin: '0 0 16px', color: '#0f172a' }}>Manual Assignment</h3>
+            <p style={{ margin: '0 0 12px', fontSize: '14px', color: '#475569' }}>Select a delivery partner for Order #{assignOrderId}. This will override their current workload limit.</p>
+            <select 
+              value={selectedDpId}
+              onChange={(e) => setSelectedDpId(e.target.value)}
+              style={{ width: '100%', padding: '10px', marginBottom: '20px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+            >
+              <option value="">-- Select Delivery Partner --</option>
+              {deliveryPersonnel.map(dp => (
+                <option key={dp.id} value={dp.id}>
+                  {dp.name} ({dp.phone}) - Rating: {dp.rating ? parseFloat(dp.rating).toFixed(1) : 'N/A'} ★
+                </option>
+              ))}
+            </select>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                onClick={() => setAssignModalOpen(false)}
+                style={{ padding: '8px 16px', backgroundColor: '#e2e8f0', color: '#475569', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleManualAssign}
+                disabled={!selectedDpId}
+                style={{ padding: '8px 16px', backgroundColor: selectedDpId ? '#f97316' : '#fdba74', color: 'white', border: 'none', borderRadius: '4px', cursor: selectedDpId ? 'pointer' : 'not-allowed' }}
+              >
+                Confirm Assignment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

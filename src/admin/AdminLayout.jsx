@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Users, Store as StoreIcon, LogOut, Menu, X, Gift, Bell, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Store as StoreIcon, LogOut, Menu, X, Gift, Bell, Settings as SettingsIcon, Truck } from 'lucide-react';
 import AdminLogin from './AdminLogin';
 import AdminDashboard from './AdminDashboard';
 import Orders from './Orders';
@@ -9,6 +9,7 @@ import Store from './Store';
 import OffersEvents from './OffersEvents';
 import Notifications from './Notifications';
 import Settings from './Settings';
+import DeliveryPartners from './DeliveryPartners';
 import './admin.css';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
@@ -163,6 +164,7 @@ function AdminLayout() {
   const navLinks = [
     { path: '/admin', name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/admin/orders', name: 'Orders', icon: <ShoppingCart size={20} /> },
+    { path: '/admin/delivery-partners', name: 'Delivery Partners', icon: <Truck size={20} /> },
     { path: '/admin/customers', name: 'Customers', icon: <Users size={20} /> },
     { path: '/admin/store', name: 'Store', icon: <StoreIcon size={20} /> },
     { path: '/admin/offers-events', name: 'Offers & Events', icon: <Gift size={20} /> },
@@ -247,6 +249,7 @@ function AdminLayout() {
         <Routes>
           <Route path="/" element={<AdminDashboard />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/delivery-partners" element={<DeliveryPartners />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/store" element={<Store />} />
           <Route path="/offers-events" element={<OffersEvents />} />
