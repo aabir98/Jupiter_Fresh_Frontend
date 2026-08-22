@@ -78,7 +78,9 @@ function OrderCard({ order, onUpdate }) {
 
   const handleConfirmDelivery = async () => {
     if (!pinInput || pinInput.length !== 4) {
-      setPinError("Please enter a 4-digit PIN.");
+      const errMsg = "Wrong Delivery Pin. Ask Delivery Pin from customer";
+      setPinError(errMsg);
+      alert(errMsg);
       return;
     }
     setPinError('');
@@ -86,7 +88,8 @@ function OrderCard({ order, onUpdate }) {
     const res = await onUpdate(order.id, 'Delivered', null, pinInput);
     setSubmittingPin(false);
     if (res && !res.success) {
-      setPinError(res.error || "Incorrect PIN. Please ask customer for correct PIN.");
+      const errMsg = res.error || "Wrong Delivery Pin. Ask Delivery Pin from customer";
+      setPinError(errMsg);
     }
   };
 

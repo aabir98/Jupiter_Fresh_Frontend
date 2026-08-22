@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Star, Calendar, X, Clock, CheckCircle } from 'lucide-react';
+import { Search, MapPin, Star, Calendar, X, Clock, CheckCircle, ShieldAlert } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 function DeliveryPartners() {
   const [partners, setPartners] = useState([]);
+  const [blacklistedPartners, setBlacklistedPartners] = useState([]);
   const [hubs, setHubs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,17 +40,25 @@ function DeliveryPartners() {
       const params = new URLSearchParams();
       if (hubFilter) params.append('hub_id', hubFilter);
       if (startDate) {
-        // Format to YYYY-MM-DD in local time
-        const startStr = startDate.toLocaleDateString('en-CA'); // en-CA outputs YYYY-MM-DD
+        const startStr = startDate.toLocaleDateString('en-CA');
         params.append('start_date', startStr);
-        // If no end date selected yet, treat it as a single day filter
         const endStr = endDate ? endDate.toLocaleDateString('en-CA') : startStr;
         params.append('end_date', endStr);
       }
 
-      const response = await fetch(`http://localhost:8000/api/admin/delivery-partners/performance?${params.toString()}`);
-      const data = await response.json();
-      setPartners(data);
+      const [activeRes, blacklistedRes] = await Promise.all([
+        fetch(`http://localhost:8000/api/admin/delivery-partners/performance?is_deleted=0&${params.toString()}`),
+        fetch(`http://localhost:8000/api/admin/delivery-partners/performance?is_deleted=1&${params.toString()}`)
+      ]);
+
+      if (activeRes.ok) {
+        const activeData = await activeRes.json();
+        setPartners(activeData);
+      }
+      if (blacklistedRes.ok) {
+        const blacklistedData = await blacklistedRes.json();
+        setBlacklistedPartners(blacklistedData);
+      }
     } catch (error) {
       console.error("Error fetching performance:", error);
     } finally {
@@ -71,7 +80,7 @@ function DeliveryPartners() {
   };
 
   const deletePartner = async (id) => {
-    if (window.confirm('Are you sure you want to permanently delete this delivery partner? They will not be able to log in again.')) {
+    if (window.confirm('Are you sure you want to permanently delete this delivery partner? They will be moved to the Blacklisted Delivery Partners list.')) {
       try {
         const response = await fetch(`http://localhost:8000/api/admin/delivery-personnel/${id}`, {
           method: 'DELETE'
@@ -89,6 +98,11 @@ function DeliveryPartners() {
   };
 
   const filteredPartners = partners.filter(dp => 
+    dp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    dp.phone.includes(searchQuery)
+  );
+
+  const filteredBlacklistedPartners = blacklistedPartners.filter(dp => 
     dp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     dp.phone.includes(searchQuery)
   );
@@ -144,80 +158,153 @@ function DeliveryPartners() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>Loading performance data...</div>
       ) : (
-        <div style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ backgroundColor: '#f1f5f9' }}>
-              <tr>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Partner Details</th>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Hub</th>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Delivered Orders</th>
-                <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Overall Rating</th>
-                <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPartners.length === 0 ? (
+        <>
+          {/* Active Delivery Partners Table */}
+          <div style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: '32px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ backgroundColor: '#f1f5f9' }}>
                 <tr>
-                  <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No delivery partners found.</td>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Partner Details</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Hub</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Status</th>
+                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Delivered Orders</th>
+                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Overall Rating</th>
+                  <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Actions</th>
                 </tr>
-              ) : (
-                filteredPartners.map(dp => (
-                  <tr key={dp.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '14px' }}>{dp.name}</div>
-                      <div style={{ color: '#64748b', fontSize: '13px' }}>{dp.phone}</div>
-                    </td>
-                    <td style={{ padding: '12px', fontSize: '14px', color: '#334155' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={14} color="#64748b" /> {dp.hub_name}
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      {dp.status === 'Busy' ? (
-                        <span style={{ backgroundColor: '#fef08a', color: '#854d0e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Busy (Active Order)</span>
-                      ) : (
-                        <span style={{ backgroundColor: '#bbf7d0', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Free</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
-                      {dp.delivered_count}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#fff7ed', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ffedd5' }}>
-                        <Star size={14} fill="#ea580c" color="#ea580c" />
-                        <span style={{ fontWeight: 'bold', color: '#ea580c', fontSize: '13px' }}>{dp.rating ? parseFloat(dp.rating).toFixed(1) : 'N/A'}</span>
-                        <span style={{ fontSize: '11px', color: '#9a3412' }}>({dp.total_ratings})</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        <button 
-                          onClick={() => toggleStatus(dp.id)}
-                          style={{ padding: '6px 12px', backgroundColor: dp.is_disabled ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                        >
-                          {dp.is_disabled ? 'Enable' : 'Disable'}
-                        </button>
-                        <button 
-                          onClick={() => deletePartner(dp.id)}
-                          style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                        >
-                          Delete
-                        </button>
-                        <button 
-                          onClick={() => setSelectedPartner(dp)}
-                          style={{ padding: '6px 12px', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </td>
+              </thead>
+              <tbody>
+                {filteredPartners.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No active delivery partners found.</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  filteredPartners.map(dp => (
+                    <tr key={dp.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '14px' }}>{dp.name}</div>
+                        <div style={{ color: '#64748b', fontSize: '13px' }}>{dp.phone}</div>
+                      </td>
+                      <td style={{ padding: '12px', fontSize: '14px', color: '#334155' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={14} color="#64748b" /> {dp.hub_name}
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        {dp.status === 'Busy' ? (
+                          <span style={{ backgroundColor: '#fef08a', color: '#854d0e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Busy (Active Order)</span>
+                        ) : (
+                          <span style={{ backgroundColor: '#bbf7d0', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Free</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
+                        {dp.delivered_count}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#fff7ed', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ffedd5' }}>
+                          <Star size={14} fill="#ea580c" color="#ea580c" />
+                          <span style={{ fontWeight: 'bold', color: '#ea580c', fontSize: '13px' }}>{dp.rating ? parseFloat(dp.rating).toFixed(1) : 'N/A'}</span>
+                          <span style={{ fontSize: '11px', color: '#9a3412' }}>({dp.total_ratings})</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <button 
+                            onClick={() => toggleStatus(dp.id)}
+                            style={{ padding: '6px 12px', backgroundColor: dp.is_disabled ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            {dp.is_disabled ? 'Enable' : 'Disable'}
+                          </button>
+                          <button 
+                            onClick={() => deletePartner(dp.id)}
+                            style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            Delete
+                          </button>
+                          <button 
+                            onClick={() => setSelectedPartner(dp)}
+                            style={{ padding: '6px 12px', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Blacklisted Delivery Partners Section */}
+          <div style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, color: '#991b1b', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldAlert size={22} color="#ef4444" /> Blacklisted Delivery Partners
+              </h3>
+              <span style={{ backgroundColor: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>
+                {filteredBlacklistedPartners.length}
+              </span>
+            </div>
+            <div style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ backgroundColor: '#fef2f2' }}>
+                  <tr>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #fecaca', fontSize: '13px', color: '#991b1b' }}>Partner Details</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #fecaca', fontSize: '13px', color: '#991b1b' }}>Hub</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #fecaca', fontSize: '13px', color: '#991b1b' }}>Status</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #fecaca', fontSize: '13px', color: '#991b1b' }}>Delivered Orders</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #fecaca', fontSize: '13px', color: '#991b1b' }}>Overall Rating</th>
+                    <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid #fecaca', fontSize: '13px', color: '#991b1b' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBlacklistedPartners.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No blacklisted delivery partners found.</td>
+                    </tr>
+                  ) : (
+                    filteredBlacklistedPartners.map(dp => (
+                      <tr key={dp.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '12px' }}>
+                          <div style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '14px' }}>{dp.name}</div>
+                          <div style={{ color: '#64748b', fontSize: '13px' }}>{dp.phone}</div>
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '14px', color: '#334155' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={14} color="#64748b" /> {dp.hub_name}
+                          </div>
+                        </td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{ backgroundColor: '#fef2f2', color: '#991b1b', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: '1px solid #fecaca' }}>
+                            Blacklisted
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
+                          {dp.delivered_count}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#fff7ed', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ffedd5' }}>
+                            <Star size={14} fill="#ea580c" color="#ea580c" />
+                            <span style={{ fontWeight: 'bold', color: '#ea580c', fontSize: '13px' }}>{dp.rating ? parseFloat(dp.rating).toFixed(1) : 'N/A'}</span>
+                            <span style={{ fontSize: '11px', color: '#9a3412' }}>({dp.total_ratings})</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right' }}>
+                          <button 
+                            onClick={() => setSelectedPartner(dp)}
+                            style={{ padding: '6px 12px', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       {selectedPartner && (

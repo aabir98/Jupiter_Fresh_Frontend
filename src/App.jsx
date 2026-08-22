@@ -30,7 +30,7 @@ function useLocalStorage(key, initialValue) {
 
   return [storedValue, setStoredValue];
 }
-import { Search, ChevronDown, User, Heart, ShoppingBag, MapPin, Grid, PlayCircle, Tag, Zap, ChevronUp, ShoppingCart, Leaf, Timer, Shield, Home, ArrowLeft, X, Bell, ChevronRight, Menu, Store, Truck } from 'lucide-react';
+import { Search, ChevronDown, User, Heart, ShoppingBag, MapPin, Grid, PlayCircle, Tag, Zap, ChevronUp, ShoppingCart, Leaf, Timer, Shield, Home, ArrowLeft, X, Bell, ChevronRight, Menu, Store, Truck, Edit2, Trash2 } from 'lucide-react';
 
 // categoryData has been moved to the backend database
 
@@ -504,6 +504,7 @@ function App() {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [addingNewAddress, setAddingNewAddress] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
   const [saveAddressLabel, setSaveAddressLabel] = useState('');
 
   // Haversine distance formula
@@ -684,7 +685,23 @@ function App() {
         fetch(`http://localhost:8000/api/addresses/${user.email}`)
           .then(res => res.json())
           .then(data => {
-            if (Array.isArray(data)) setSavedAddresses(data);
+            if (Array.isArray(data)) {
+              setSavedAddresses(data);
+              if (data.length > 0) {
+                const first = data[0];
+                setSelectedAddressId(first.id);
+                setDeliveryDetails(prev => ({
+                  ...prev,
+                  street: first.address.split(',')[0] ? first.address.split(',')[0].trim() : '',
+                  locality: first.address.split(',')[1] ? first.address.split(',')[1].trim() : '',
+                  city: first.address.split(',')[2] ? first.address.split(',')[2].trim() : '',
+                  state: first.address.split(',')[3] ? first.address.split(',')[3].trim() : '',
+                  landmark: first.landmark || '',
+                  lat: first.lat,
+                  lng: first.lng
+                }));
+              }
+            }
           })
           .catch(err => console.error("Error fetching addresses:", err));
 
@@ -754,19 +771,7 @@ function App() {
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editPhoneInput, setEditPhoneInput] = useState('');
 
-  const handleDeleteAddress = async (id) => {
-    if (window.confirm("Are you sure you want to delete this address?")) {
-      try {
-        const response = await fetch(`http://localhost:8000/api/addresses/${id}`, { method: 'DELETE' });
-        if (response.ok) {
-          setSavedAddresses(savedAddresses.filter(addr => addr.id !== id));
-          if (selectedAddressId === id) setSelectedAddressId(null);
-        }
-      } catch (err) {
-        console.error("Error deleting address:", err);
-      }
-    }
-  };
+
 
   const handlePlaceOrder = async () => {
     if (!user) {
@@ -779,27 +784,30 @@ function App() {
       return;
     }
 
-    if (!deliveryDetails.building) {
+    if (!deliveryDetails.building || !deliveryDetails.building.trim()) {
       alert("Please fill in your Building Name / House No.");
       return;
     }
 
-    if (!deliveryDetails.city || !deliveryDetails.city.trim()) {
-      alert("Please fill in your City.");
-      return;
-    }
+    const addressParts = [
+      deliveryDetails.building ? deliveryDetails.building.trim() : '',
+      deliveryDetails.street ? deliveryDetails.street.trim() : '',
+      deliveryDetails.locality ? deliveryDetails.locality.trim() : '',
+      deliveryDetails.city ? deliveryDetails.city.trim() : '',
+      deliveryDetails.state ? deliveryDetails.state.trim() : ''
+    ].filter(Boolean);
+    const addressStr = addressParts.join(', ');
 
     const newOrder = {
       id: 'JF-' + Math.floor(10000 + Math.random() * 90000),
       date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
       items: cartDetails.items,
       grandTotal: cartDetails.grandTotal,
-      deliveryDetails: { ...deliveryDetails, email: user.email, deliveryFee: cartDetails.deliveryFee }
+      deliveryDetails: { ...deliveryDetails, address: addressStr, email: user.email, deliveryFee: cartDetails.deliveryFee }
     };
 
     try {
       if (saveAddressLabel.trim() && user.email) {
-        const addressStr = `${deliveryDetails.building ? deliveryDetails.building + ', ' : ''}${deliveryDetails.street}, ${deliveryDetails.locality}, ${deliveryDetails.city}, ${deliveryDetails.state}`;
         fetch('http://localhost:8000/api/addresses', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -807,7 +815,7 @@ function App() {
             userEmail: user.email,
             label: saveAddressLabel.trim(),
             address: addressStr,
-            landmark: deliveryDetails.landmark,
+            landmark: deliveryDetails.landmark || '',
             lat: deliveryDetails.lat,
             lng: deliveryDetails.lng
           })
@@ -818,7 +826,7 @@ function App() {
               userEmail: user.email,
               label: saveAddressLabel.trim(),
               address: addressStr,
-              landmark: deliveryDetails.landmark,
+              landmark: deliveryDetails.landmark || '',
               lat: deliveryDetails.lat,
               lng: deliveryDetails.lng
             }, ...savedAddresses]);
@@ -846,6 +854,99 @@ function App() {
     } catch (err) {
       console.error(err);
       alert("Network error. Please try again.");
+    }
+  };
+
+  const handleEditAddress = (addr) => {
+    setEditingAddressId(addr.id);
+    setAddingNewAddress(true);
+    setSaveAddressLabel(addr.label || 'Home');
+    const parts = (addr.address || '').split(',').map(s => s.trim());
+    setDeliveryDetails(prev => ({
+      ...prev,
+      street: parts[0] || '',
+      building: parts[1] || '',
+      locality: parts[2] || '',
+      city: parts[3] || '',
+      state: parts[4] || '',
+      landmark: addr.landmark || '',
+      lat: addr.lat,
+      lng: addr.lng
+    }));
+  };
+
+  const handleSaveEditedAddress = async () => {
+    if (!editingAddressId) return;
+    if (!deliveryDetails.lat || !deliveryDetails.lng) {
+      alert("Please set your location on the map.");
+      return;
+    }
+    if (!deliveryDetails.building || !deliveryDetails.building.trim()) {
+      alert("Please fill in your Building Name / House No.");
+      return;
+    }
+
+    const addressParts = [
+      deliveryDetails.building ? deliveryDetails.building.trim() : '',
+      deliveryDetails.street ? deliveryDetails.street.trim() : '',
+      deliveryDetails.locality ? deliveryDetails.locality.trim() : '',
+      deliveryDetails.city ? deliveryDetails.city.trim() : '',
+      deliveryDetails.state ? deliveryDetails.state.trim() : ''
+    ].filter(Boolean);
+    const addressStr = addressParts.join(', ');
+    
+    try {
+      const response = await fetch(`http://localhost:8000/api/addresses/${editingAddressId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: saveAddressLabel.trim() || 'Home',
+          address: addressStr,
+          landmark: deliveryDetails.landmark || '',
+          lat: deliveryDetails.lat,
+          lng: deliveryDetails.lng
+        })
+      });
+      if (response.ok) {
+        setSavedAddresses(savedAddresses.map(a => 
+          a.id === editingAddressId 
+            ? { ...a, label: saveAddressLabel.trim() || 'Home', address: addressStr, landmark: deliveryDetails.landmark || '', lat: deliveryDetails.lat, lng: deliveryDetails.lng }
+            : a
+        ));
+        setSelectedAddressId(editingAddressId);
+        setEditingAddressId(null);
+        setAddingNewAddress(false);
+      } else {
+        alert("Failed to update address.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating address.");
+    }
+  };
+
+  const handleDeleteAddress = async (addressId, e) => {
+    if (e) e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this saved address?")) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/addresses/${addressId}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          const updated = savedAddresses.filter(a => a.id !== addressId);
+          setSavedAddresses(updated);
+          if (selectedAddressId === addressId) {
+            if (updated.length > 0) {
+              setSelectedAddressId(updated[0].id);
+            } else {
+              setSelectedAddressId(null);
+              setAddingNewAddress(true);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -2531,67 +2632,146 @@ function App() {
                   </div>
 
                   {/* Delivery Details */}
-                  <div className="delivery-details-section" style={{ backgroundColor: 'var(--white)', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
+                  <div className="delivery-details-section" style={{ backgroundColor: 'var(--white)', padding: '16px', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>Delivery Details</h3>
-                      {(savedAddresses.length > 0 && addingNewAddress) && (
-                        <button onClick={() => setAddingNewAddress(false)} style={{ fontSize: '13px', color: 'var(--primary-green)', fontWeight: 'bold', background: 'none', border: 'none', cursor: 'pointer' }}>
-                          Cancel
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <MapPin size={18} color="var(--primary-green)" /> {editingAddressId ? "Edit Address" : "Delivery Details"}
+                      </h3>
+                      {savedAddresses.length > 0 && addingNewAddress && (
+                        <button 
+                          onClick={() => {
+                            setAddingNewAddress(false);
+                            setEditingAddressId(null);
+                            if (savedAddresses.length > 0) {
+                              const first = savedAddresses[0];
+                              setSelectedAddressId(first.id);
+                              setDeliveryDetails(prev => ({
+                                ...prev,
+                                street: first.address.split(',')[0] ? first.address.split(',')[0].trim() : '',
+                                locality: first.address.split(',')[1] ? first.address.split(',')[1].trim() : '',
+                                city: first.address.split(',')[2] ? first.address.split(',')[2].trim() : '',
+                                state: first.address.split(',')[3] ? first.address.split(',')[3].trim() : '',
+                                landmark: first.landmark || '',
+                                lat: first.lat,
+                                lng: first.lng
+                              }));
+                            }
+                          }} 
+                          style={{ fontSize: '13px', color: 'var(--primary-green)', fontWeight: 'bold', background: 'none', border: 'none', cursor: 'pointer' }}
+                        >
+                          ← Select Saved Address
                         </button>
                       )}
                     </div>
 
                     {savedAddresses.length > 0 && !addingNewAddress ? (
                       <div>
-                        {savedAddresses.map(addr => (
-                          <div
-                            key={addr.id}
-                            onClick={() => {
-                              setSelectedAddressId(addr.id);
-                              setDeliveryDetails({
-                                ...deliveryDetails,
-                                street: addr.address.split(',')[0] ? addr.address.split(',')[0].trim() : '',
-                                locality: addr.address.split(',')[1] ? addr.address.split(',')[1].trim() : '',
-                                city: addr.address.split(',')[2] ? addr.address.split(',')[2].trim() : '',
-                                state: addr.address.split(',')[3] ? addr.address.split(',')[3].trim() : '',
-                                landmark: addr.landmark || '',
-                                lat: addr.lat,
-                                lng: addr.lng
-                              });
-                            }}
-                            style={{
-                              padding: '12px',
-                              border: selectedAddressId === addr.id ? '2px solid var(--primary-green)' : '1px solid #e2e8f0',
-                              borderRadius: '8px',
-                              marginBottom: '12px',
-                              cursor: 'pointer',
-                              backgroundColor: selectedAddressId === addr.id ? '#f0fdf4' : 'white',
-                              position: 'relative'
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <span style={{ fontSize: '12px', fontWeight: 'bold', backgroundColor: '#e2e8f0', padding: '2px 8px', borderRadius: '12px', color: '#475569' }}>
-                                {addr.label}
-                              </span>
-                            </div>
-                            <p style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#334155', fontWeight: '500' }}>{addr.address}</p>
-                            {addr.landmark && <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Landmark: {addr.landmark}</p>}
-
-                            {selectedAddressId === addr.id && (
-                              <div style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--primary-green)' }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#64748b', fontWeight: '600' }}>
+                          Select delivery address:
+                        </p>
+                        {savedAddresses.map(addr => {
+                          const isSelected = selectedAddressId === addr.id;
+                          return (
+                            <div
+                              key={addr.id}
+                              onClick={() => {
+                                setSelectedAddressId(addr.id);
+                                setDeliveryDetails({
+                                  ...deliveryDetails,
+                                  street: addr.address.split(',')[0] ? addr.address.split(',')[0].trim() : '',
+                                  locality: addr.address.split(',')[1] ? addr.address.split(',')[1].trim() : '',
+                                  city: addr.address.split(',')[2] ? addr.address.split(',')[2].trim() : '',
+                                  state: addr.address.split(',')[3] ? addr.address.split(',')[3].trim() : '',
+                                  landmark: addr.landmark || '',
+                                  lat: addr.lat,
+                                  lng: addr.lng
+                                });
+                              }}
+                              style={{
+                                padding: '14px',
+                                border: isSelected ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                                borderRadius: '10px',
+                                marginBottom: '12px',
+                                cursor: 'pointer',
+                                backgroundColor: isSelected ? '#f0fdf4' : 'white',
+                                boxShadow: isSelected ? '0 2px 8px rgba(22, 163, 74, 0.12)' : 'none',
+                                transition: 'all 0.2s ease',
+                                position: 'relative'
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    borderRadius: '50%',
+                                    border: isSelected ? '5px solid #16a34a' : '2px solid #94a3b8',
+                                    backgroundColor: 'white',
+                                    boxSizing: 'border-box'
+                                  }} />
+                                  <span style={{ fontSize: '12px', fontWeight: 'bold', backgroundColor: isSelected ? '#dcfce7' : '#e2e8f0', padding: '2px 10px', borderRadius: '12px', color: isSelected ? '#15803d' : '#475569' }}>
+                                    {addr.label}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  {isSelected && (
+                                    <span style={{ backgroundColor: '#16a34a', color: 'white', fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      ✓ SELECTED
+                                    </span>
+                                  )}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditAddress(addr);
+                                    }}
+                                    style={{
+                                      backgroundColor: '#f1f5f9',
+                                      color: '#0284c7',
+                                      border: '1px solid #cbd5e1',
+                                      borderRadius: '6px',
+                                      padding: '3px 8px',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}
+                                  >
+                                    <Edit2 size={12} /> Edit
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleDeleteAddress(addr.id, e)}
+                                    style={{
+                                      backgroundColor: '#fef2f2',
+                                      color: '#ef4444',
+                                      border: '1px solid #fecaca',
+                                      borderRadius: '6px',
+                                      padding: '3px 6px',
+                                      fontSize: '12px',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center'
+                                    }}
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              <p style={{ margin: '4px 0 2px 26px', fontSize: '14px', color: '#1e293b', fontWeight: '600', lineHeight: '1.4' }}>{addr.address}</p>
+                              {addr.landmark && <p style={{ margin: '0 0 0 26px', fontSize: '12px', color: '#64748b' }}>Landmark: {addr.landmark}</p>}
+                            </div>
+                          );
+                        })}
 
                         <button
                           onClick={() => {
                             setSelectedAddressId(null);
+                            setEditingAddressId(null);
                             setAddingNewAddress(true);
                             setDeliveryDetails({ ...deliveryDetails, street: '', building: '', locality: '', landmark: '', city: '', state: '', lat: null, lng: null });
                           }}
-                          style={{ width: '100%', padding: '12px', border: '1px dashed var(--primary-green)', borderRadius: '8px', backgroundColor: 'transparent', color: 'var(--primary-green)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+                          style={{ width: '100%', padding: '12px', border: '1.5px dashed var(--primary-green)', borderRadius: '8px', backgroundColor: '#f0fdf4', color: 'var(--primary-green)', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '4px' }}
                         >
                           <span style={{ fontSize: '18px' }}>+</span> Add New Address
                         </button>
@@ -2622,21 +2802,22 @@ function App() {
                           />
                           <input
                             type="text"
-                            placeholder="Street Name"
+                            placeholder="Building Name / House No * (Required)"
+                            className="delivery-input"
+                            style={{ fontWeight: '600', borderColor: deliveryDetails.building ? '#16a34a' : '#cbd5e1' }}
+                            value={deliveryDetails.building || ''}
+                            onChange={(e) => setDeliveryDetails({ ...deliveryDetails, building: e.target.value })}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Street Name (Optional)"
                             className="delivery-input"
                             value={deliveryDetails.street || ''}
                             onChange={(e) => setDeliveryDetails({ ...deliveryDetails, street: e.target.value })}
                           />
                           <input
                             type="text"
-                            placeholder="Building Name / House No"
-                            className="delivery-input"
-                            value={deliveryDetails.building || ''}
-                            onChange={(e) => setDeliveryDetails({ ...deliveryDetails, building: e.target.value })}
-                          />
-                          <input
-                            type="text"
-                            placeholder="Locality / Area"
+                            placeholder="Locality / Area (Optional)"
                             className="delivery-input"
                             value={deliveryDetails.locality || ''}
                             onChange={(e) => setDeliveryDetails({ ...deliveryDetails, locality: e.target.value })}
@@ -2651,7 +2832,7 @@ function App() {
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <input
                               type="text"
-                              placeholder="City"
+                              placeholder="City (Optional)"
                               className="delivery-input"
                               style={{ flex: 1 }}
                               value={deliveryDetails.city || ''}
@@ -2659,7 +2840,7 @@ function App() {
                             />
                             <input
                               type="text"
-                              placeholder="State"
+                              placeholder="State (Optional)"
                               className="delivery-input"
                               style={{ flex: 1 }}
                               value={deliveryDetails.state || ''}
@@ -2691,6 +2872,16 @@ function App() {
                               ))}
                             </div>
                           </div>
+
+                          {editingAddressId && (
+                            <button
+                              type="button"
+                              onClick={handleSaveEditedAddress}
+                              style={{ width: '100%', padding: '12px', backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '12px', fontSize: '14px' }}
+                            >
+                              Update Address
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -2802,14 +2993,14 @@ function App() {
                         )}
 
                         {order.delivery_pin && order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                          <div style={{ backgroundColor: '#fffbeb', color: '#b45309', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: '600', border: '1px solid #fde68a' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <Shield size={16} color="#d97706" />
-                              <span>Delivery PIN:</span>
+                          <div style={{ backgroundColor: '#fff7ed', color: '#9a3412', padding: '12px 14px', borderRadius: '10px', marginBottom: '16px', border: '1.5px dashed #f97316', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                            <div>
+                              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#c2410c', fontWeight: 'bold' }}>Share with Delivery Partner</div>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#431407' }}>4-Digit Delivery PIN</div>
                             </div>
-                            <span style={{ fontSize: '16px', fontWeight: '800', letterSpacing: '2px', backgroundColor: 'white', padding: '2px 10px', borderRadius: '6px', border: '1px solid #f59e0b', color: '#b45309' }}>
+                            <div style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '4px', backgroundColor: 'white', padding: '4px 14px', borderRadius: '8px', border: '2px solid #ea580c', color: '#ea580c', boxShadow: '0 2px 4px rgba(234, 88, 12, 0.15)' }}>
                               {order.delivery_pin}
-                            </span>
+                            </div>
                           </div>
                         )}
 
