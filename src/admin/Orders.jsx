@@ -329,6 +329,14 @@ function Orders() {
                         )}
                       </div>
                     )}
+                    {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                      <button 
+                        onClick={() => openAssignModal(order.id, order.hub_id)}
+                        style={{ marginTop: '8px', padding: '6px 12px', backgroundColor: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                      >
+                        Re-assign Manually
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: '#fff7ed', borderRadius: '8px', border: '1px solid #ffedd5' }}>

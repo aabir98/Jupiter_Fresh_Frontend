@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import DeliveryDashboard from './DeliveryDashboard';
 import DeliveryHistory from './DeliveryHistory';
 import DeliveryAccount from './DeliveryAccount';
@@ -109,6 +111,28 @@ export default function DeliveryLayout() {
     }
   }, [deliveryUser]);
 
+  useEffect(() => {
+    if (deliveryUser && Capacitor.isNativePlatform()) {
+      PushNotifications.requestPermissions().then(result => {
+        if (result.receive === 'granted') {
+          PushNotifications.register();
+        }
+      });
+
+      const listener = PushNotifications.addListener('registration', (token) => {
+        fetch('http://localhost:8000/api/device-tokens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token.value, role: 'delivery', identifier: deliveryUser.email })
+        }).catch(e => console.error('Failed to save delivery token', e));
+      });
+
+      return () => {
+        listener.then(l => l.remove());
+      };
+    }
+  }, [deliveryUser]);
+
   const handleGoogleSuccess = async (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     const { email, name, picture } = decoded;
@@ -123,6 +147,8 @@ export default function DeliveryLayout() {
 
       if (res.ok && data.id) {
         setDeliveryUser(data);
+      } else if (res.status === 403) {
+        alert(data.detail || "Access denied.");
       } else if (res.status === 400 && data.detail.includes("Phone and Hub ID")) {
         setTempUser({ email, name, picture });
         setIsRegistering(true);
@@ -149,6 +175,8 @@ export default function DeliveryLayout() {
       if (res.ok) {
         setDeliveryUser(data);
         setIsRegistering(false);
+      } else if (res.status === 403) {
+        alert(data.detail || "Access denied.");
       } else {
         alert("Registration failed");
       }
@@ -241,6 +269,23 @@ export default function DeliveryLayout() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (deliveryUser.is_disabled) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fef2f2' }}>
+        <div style={{ padding: '32px', backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', textAlign: 'center', maxWidth: '400px' }}>
+          <div style={{ width: '64px', height: '64px', backgroundColor: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <User size={32} color="white" />
+          </div>
+          <h2 style={{ color: '#991b1b', margin: '0 0 8px 0' }}>Account Disabled</h2>
+          <p style={{ color: '#7f1d1d', margin: '0 0 24px 0' }}>Your account has been banned or disabled by the administrator. You cannot receive any orders.</p>
+          <button onClick={handleLogout} style={{ padding: '12px 24px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Log Out
+          </button>
         </div>
       </div>
     );

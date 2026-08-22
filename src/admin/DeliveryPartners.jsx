@@ -57,6 +57,37 @@ function DeliveryPartners() {
     }
   };
 
+  const toggleStatus = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/admin/delivery-personnel/${id}/toggle-status`, {
+        method: 'PATCH'
+      });
+      if (response.ok) {
+        fetchPerformance();
+      }
+    } catch (error) {
+      console.error("Error toggling status:", error);
+    }
+  };
+
+  const deletePartner = async (id) => {
+    if (window.confirm('Are you sure you want to permanently delete this delivery partner? They will not be able to log in again.')) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/admin/delivery-personnel/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          fetchPerformance();
+          if (selectedPartner && selectedPartner.id === id) {
+            setSelectedPartner(null);
+          }
+        }
+      } catch (error) {
+        console.error("Error deleting partner:", error);
+      }
+    }
+  };
+
   const filteredPartners = partners.filter(dp => 
     dp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     dp.phone.includes(searchQuery)
@@ -160,12 +191,26 @@ function DeliveryPartners() {
                       </div>
                     </td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>
-                      <button 
-                        onClick={() => setSelectedPartner(dp)}
-                        style={{ padding: '6px 12px', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                      >
-                        View Details
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <button 
+                          onClick={() => toggleStatus(dp.id)}
+                          style={{ padding: '6px 12px', backgroundColor: dp.is_disabled ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                        >
+                          {dp.is_disabled ? 'Enable' : 'Disable'}
+                        </button>
+                        <button 
+                          onClick={() => deletePartner(dp.id)}
+                          style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                        >
+                          Delete
+                        </button>
+                        <button 
+                          onClick={() => setSelectedPartner(dp)}
+                          style={{ padding: '6px 12px', backgroundColor: '#0284c7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
