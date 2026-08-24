@@ -2410,7 +2410,7 @@ function App() {
                     boxSizing: 'border-box'
                   }}>
                     {categoryTabMainCategory === 'Fashion' && (
-                      <div style={{ position: 'relative' }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
                         <select
                           value={categoryTabGenderFilter}
                           onChange={(e) => setCategoryTabGenderFilter(e.target.value)}
@@ -2436,7 +2436,7 @@ function App() {
                       </div>
                     )}
                     {categoryTabMainCategory === 'Fashion' && categoryTabAvailableSizes.length > 0 && (
-                      <div style={{ position: 'relative' }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
                         <select
                           value={categoryTabSizeFilter}
                           onChange={(e) => setCategoryTabSizeFilter(e.target.value)}
@@ -2461,7 +2461,7 @@ function App() {
                         <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '9px' }}>▼</span>
                       </div>
                     )}
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
                       <select
                         value={categoryTabPriceSort}
                         onChange={(e) => setCategoryTabPriceSort(e.target.value)}
