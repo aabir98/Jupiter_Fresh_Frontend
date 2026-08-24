@@ -2490,8 +2490,8 @@ function App() {
                     })
                     .sort((a, b) => {
                       if (!['Fashion', 'Electronics'].includes(categoryTabMainCategory) || !categoryTabPriceSort) return 0;
-                      if (categoryTabPriceSort === 'low_to_high') return a.price - b.price;
-                      if (categoryTabPriceSort === 'high_to_low') return b.price - a.price;
+                      if (categoryTabPriceSort === 'low_to_high') return a.currentPrice - b.currentPrice;
+                      if (categoryTabPriceSort === 'high_to_low') return b.currentPrice - a.currentPrice;
                       return 0;
                     })
                     .map((product, idx) => (
