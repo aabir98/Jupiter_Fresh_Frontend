@@ -2408,11 +2408,12 @@ function App() {
                     boxSizing: 'border-box'
                   }}>
                     {categoryTabMainCategory === 'Fashion' && (
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{ position: 'relative', flex: 1 }}>
                         <select
                           value={categoryTabGenderFilter}
                           onChange={(e) => setCategoryTabGenderFilter(e.target.value)}
                           style={{
+                            width: '100%',
                             padding: '5px 16px 5px 6px',
                             borderRadius: '16px',
                             border: '1px solid #e2e8f0',
@@ -2434,11 +2435,12 @@ function App() {
                       </div>
                     )}
                     {categoryTabMainCategory === 'Fashion' && categoryTabAvailableSizes.length > 0 && (
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{ position: 'relative', flex: 1 }}>
                         <select
                           value={categoryTabSizeFilter}
                           onChange={(e) => setCategoryTabSizeFilter(e.target.value)}
                           style={{
+                            width: '100%',
                             padding: '5px 16px 5px 6px',
                             borderRadius: '16px',
                             border: '1px solid #e2e8f0',
@@ -2459,11 +2461,12 @@ function App() {
                         <span style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '7px' }}>▼</span>
                       </div>
                     )}
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{ position: 'relative', flex: 1.2 }}>
                       <select
                         value={categoryTabPriceSort}
                         onChange={(e) => setCategoryTabPriceSort(e.target.value)}
                         style={{
+                          width: '100%',
                           padding: '5px 16px 5px 6px',
                           borderRadius: '16px',
                           border: '1px solid #e2e8f0',
