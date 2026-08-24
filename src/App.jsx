@@ -2397,9 +2397,9 @@ function App() {
 
                 {['Fashion', 'Electronics'].includes(categoryTabMainCategory) && (
                   <div style={{
-                    padding: '8px 8px',
+                    padding: '8px 12px',
                     display: 'flex',
-                    gap: '4px',
+                    gap: '8px',
                     alignItems: 'center',
                     backgroundColor: '#fff',
                     borderBottom: '1px solid #f1f5f9',
