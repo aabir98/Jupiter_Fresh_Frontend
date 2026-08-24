@@ -793,10 +793,20 @@ body {
   line-height: 1.2;
 }
 
+/* Lock app height to viewport and prevent body scrolling when in Category tab */
+.app-container:has(.category-page-container) {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 80px;
+}
+
 /* Category Page Layout */
 .category-page-container {
   display: flex;
-  height: calc(100vh - 120px); /* 120px approx height for header + footer */
+  flex: 1;
+  height: 0; /* Let flexbox calculate exact remaining height to enable independent scrollbars */
   background-color: var(--white);
   border-top: 1px solid var(--border-color);
 }
