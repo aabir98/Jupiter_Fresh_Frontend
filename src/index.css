@@ -862,6 +862,7 @@ body {
   flex: 1;
   padding: 12px;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: var(--white);
 }
 
@@ -869,6 +870,12 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.category-content .product-card {
+  min-width: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
 }
 
 /* Cart Page */

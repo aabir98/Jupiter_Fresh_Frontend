@@ -2339,11 +2339,11 @@ function App() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
-                        padding: '8px 16px',
+                        padding: '6px 12px',
                         borderRadius: '24px',
                         border: categoryTabMainCategory === mc.name ? '1px solid transparent' : '1px solid #e2e8f0',
                         whiteSpace: 'nowrap',
-                        fontSize: '14px',
+                        fontSize: '12px',
                         fontWeight: '700',
                         backgroundColor: categoryTabMainCategory === mc.name ? 'var(--primary)' : '#ffffff',
                         color: categoryTabMainCategory === mc.name ? 'var(--white)' : '#334155',
@@ -2396,7 +2396,19 @@ function App() {
                 )}
 
                 {['Fashion', 'Electronics'].includes(categoryTabMainCategory) && (
-                  <div style={{ padding: '8px 16px', display: 'flex', gap: '8px', alignItems: 'center', backgroundColor: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+                  <div style={{
+                    padding: '8px 16px',
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'center',
+                    backgroundColor: '#fff',
+                    borderBottom: '1px solid #f1f5f9',
+                    overflowX: 'auto',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    width: '100%',
+                    boxSizing: 'border-box'
+                  }}>
                     {categoryTabMainCategory === 'Fashion' && (
                       <div style={{ position: 'relative' }}>
                         <select
