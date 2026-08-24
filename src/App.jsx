@@ -447,15 +447,22 @@ function App() {
   });
 
   const unratedOrder = useMemo(() => {
-    return placedOrders.find(o => 
-      o.status === 'Delivered' && 
-      (!o.rating || !o.delivery_partner_rating) && 
-      !dismissedRatings.includes(o.id)
-    );
+    // Find the single most recent delivered order
+    const newestDelivered = placedOrders.find(o => o.status === 'Delivered');
+    if (!newestDelivered) return null;
+
+    // Only prompt if this most recent order is unrated (order or delivery partner) and not dismissed
+    const isUnrated = !newestDelivered.rating || !newestDelivered.delivery_partner_rating;
+    if (isUnrated && !dismissedRatings.includes(newestDelivered.id)) {
+      return newestDelivered;
+    }
+    return null;
   }, [placedOrders, dismissedRatings]);
 
   const dismissRating = (orderId) => {
-    const updated = [...dismissedRatings, orderId];
+    // Dismiss all currently loaded delivered orders so they don't prompt again
+    const deliveredIds = placedOrders.filter(o => o.status === 'Delivered').map(o => o.id);
+    const updated = Array.from(new Set([...dismissedRatings, ...deliveredIds]));
     setDismissedRatings(updated);
     localStorage.setItem('dismissedRatings', JSON.stringify(updated));
   };
