@@ -525,7 +525,7 @@ function App() {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
-        clientId: '948937732006-v2cgaa07idhk1jluioqh2theee9na728.apps.googleusercontent.com',
+        clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
         grantOfflineAccess: false
       });

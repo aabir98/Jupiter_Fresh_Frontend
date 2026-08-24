@@ -11,7 +11,7 @@ const AppTarget = import.meta.env.VITE_APP_TARGET === 'admin' ? AdminLayout : Ap
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId="948937732006-v2cgaa07idhk1jluioqh2theee9na728.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com">
       <BrowserRouter>
         <Routes>
           {import.meta.env.VITE_APP_TARGET === 'admin' ? (

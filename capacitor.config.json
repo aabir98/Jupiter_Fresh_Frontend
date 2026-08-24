@@ -8,9 +8,9 @@
     },
     "GoogleAuth": {
       "scopes": ["profile", "email"],
-      "androidClientId": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
-      "clientId": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
-      "serverClientId": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+      "androidClientId": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
+      "clientId": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
+      "serverClientId": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
       "forceCodeForRefreshToken": false
     },
     "PushNotifications": {
