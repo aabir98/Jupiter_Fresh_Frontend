@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { API_BASE_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -27,8 +28,8 @@ function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [ordersRes, customersRes] = await Promise.all([
-        fetch('http://localhost:8000/api/orders'),
-        fetch('http://localhost:8000/api/customers')
+        fetch(`${API_BASE_URL}/api/orders`),
+        fetch(`${API_BASE_URL}/api/customers`)
       ]);
       const ordersData = await ordersRes.json();
       const customersData = await customersRes.json();

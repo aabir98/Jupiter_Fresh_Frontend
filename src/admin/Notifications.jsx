@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Bell, Plus, Trash2, Edit2, CheckCircle, XCircle, ShoppingBag, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,8 +33,8 @@ function Notifications() {
   const fetchData = async () => {
     try {
       const [annRes, alertRes] = await Promise.all([
-        fetch('http://localhost:8000/api/admin/notifications'),
-        fetch('http://localhost:8000/api/admin/alerts')
+        fetch(`${API_BASE_URL}/api/admin/notifications`),
+        fetch(`${API_BASE_URL}/api/admin/alerts`)
       ]);
       if (annRes.ok) setAnnouncements(await annRes.json());
       if (alertRes.ok) setAlerts(await alertRes.json());
@@ -48,8 +49,8 @@ function Notifications() {
     e.preventDefault();
     try {
       const url = editingId 
-        ? `http://localhost:8000/api/admin/notifications/${editingId}`
-        : 'http://localhost:8000/api/admin/notifications';
+        ? `${API_BASE_URL}/api/admin/notifications/${editingId}`
+        : `${API_BASE_URL}/api/admin/notifications`;
         
       const method = editingId ? 'PUT' : 'POST';
       
@@ -72,7 +73,7 @@ function Notifications() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this notification?')) {
       try {
-        const response = await fetch(`http://localhost:8000/api/admin/notifications/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${API_BASE_URL}/api/admin/notifications/${id}`, { method: 'DELETE' });
         if (response.ok) fetchData();
       } catch (error) {
         console.error('Error deleting notification:', error);
@@ -82,7 +83,7 @@ function Notifications() {
 
   const handleToggleActive = async (notification) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/notifications/${notification.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/notifications/${notification.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: notification.text, is_active: !notification.is_active }),
@@ -96,7 +97,7 @@ function Notifications() {
   const handleAlertClick = async (alert) => {
     if (!alert.is_read) {
       try {
-        await fetch(`http://localhost:8000/api/admin/alerts/${alert.id}/read`, { method: 'PATCH' });
+        await fetch(`${API_BASE_URL}/api/admin/alerts/${alert.id}/read`, { method: 'PATCH' });
       } catch (e) {
         console.error(e);
       }
@@ -106,7 +107,7 @@ function Notifications() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('http://localhost:8000/api/admin/alerts/read_all', { method: 'PATCH' });
+      await fetch(`${API_BASE_URL}/api/admin/alerts/read_all`, { method: 'PATCH' });
       fetchData();
     } catch (e) {
       console.error(e);

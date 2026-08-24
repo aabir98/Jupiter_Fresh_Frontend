@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Save } from 'lucide-react';
 
 function Settings() {
@@ -13,7 +14,7 @@ function Settings() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/settings');
+      const response = await fetch(`${API_BASE_URL}/api/settings`);
       if (response.ok) {
         const data = await response.json();
         const minOrderSetting = data.find(s => s.key === 'MIN_ORDER_FOR_FREE_DELIVERY');
@@ -34,12 +35,12 @@ function Settings() {
     setSaving(true);
     try {
       await Promise.all([
-        fetch('http://localhost:8000/api/settings', {
+        fetch(`${API_BASE_URL}/api/settings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key: 'MIN_ORDER_FOR_FREE_DELIVERY', value: minOrder })
         }),
-        fetch('http://localhost:8000/api/settings', {
+        fetch(`${API_BASE_URL}/api/settings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key: 'DELIVERY_CHARGE', value: deliveryCharge })

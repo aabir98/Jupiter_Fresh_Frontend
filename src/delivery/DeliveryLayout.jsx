@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../config';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
@@ -48,7 +49,7 @@ export default function DeliveryLayout() {
 
   useEffect(() => {
     if (!deliveryUser) {
-      fetch('http://localhost:8000/api/hubs')
+      fetch(`${API_BASE_URL}/api/hubs`)
         .then(res => res.json())
         .then(data => setHubs(data.filter(h => h.is_active)))
         .catch(err => console.error("Error fetching hubs:", err));
@@ -69,7 +70,7 @@ export default function DeliveryLayout() {
   const fetchOrders = () => {
     if (!deliveryUser) return;
 
-    fetch(`http://localhost:8000/api/delivery/orders/${deliveryUser.email}`)
+    fetch(`${API_BASE_URL}/api/delivery/orders/${deliveryUser.email}`)
       .then(res => res.json())
       .then(data => {
         setOrders(data);
@@ -120,7 +121,7 @@ export default function DeliveryLayout() {
       });
 
       const listener = PushNotifications.addListener('registration', (token) => {
-        fetch('http://localhost:8000/api/device-tokens', {
+        fetch(`${API_BASE_URL}/api/device-tokens`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: token.value, role: 'delivery', identifier: deliveryUser.email })
@@ -138,7 +139,7 @@ export default function DeliveryLayout() {
     const { email, name, picture } = decoded;
 
     try {
-      const res = await fetch('http://localhost:8000/api/delivery/login', {
+      const res = await fetch(`${API_BASE_URL}/api/delivery/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, picture })
@@ -166,7 +167,7 @@ export default function DeliveryLayout() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/delivery/login', {
+      const res = await fetch(`${API_BASE_URL}/api/delivery/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...tempUser, phone, hub_id: parseInt(hubId) })

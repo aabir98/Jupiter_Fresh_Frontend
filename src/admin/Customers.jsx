@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -18,7 +19,7 @@ function Customers() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/customers');
+      const response = await fetch(`${API_BASE_URL}/api/customers`);
       const data = await response.json();
       setCustomers(data);
     } catch (error) {
@@ -32,7 +33,7 @@ function Customers() {
     setSelectedCustomer(customer);
     setOrdersLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/orders/user/${customer.phone}`);
+      const response = await fetch(`${API_BASE_URL}/api/orders/user/${customer.phone}`);
       const data = await response.json();
       setCustomerOrders(data);
     } catch (err) {

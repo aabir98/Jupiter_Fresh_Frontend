@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, ShoppingCart, Users, Store as StoreIcon, LogOut, Menu, X, Gift, Bell, Settings as SettingsIcon, Truck } from 'lucide-react';
 import AdminLogin from './AdminLogin';
@@ -41,7 +42,7 @@ function AdminLayout() {
 
   const fetchUnreadAlerts = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/admin/alerts');
+      const res = await fetch(`${API_BASE_URL}/api/admin/alerts`);
       if (res.ok) {
         const data = await res.json();
         const count = data.filter(a => !a.is_read).length;
@@ -64,7 +65,7 @@ function AdminLayout() {
       });
 
       PushNotifications.addListener('registration', (token) => {
-        fetch('http://localhost:8000/api/device-tokens', {
+        fetch(`${API_BASE_URL}/api/device-tokens`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: token.value, role: 'admin' })
@@ -105,7 +106,7 @@ function AdminLayout() {
       
       const registration = await navigator.serviceWorker.register('/sw.js');
       
-      const response = await fetch('http://localhost:8000/api/admin/vapid_public_key');
+      const response = await fetch(`${API_BASE_URL}/api/admin/vapid_public_key`);
       if (!response.ok) return;
       const { public_key } = await response.json();
       
@@ -125,7 +126,7 @@ function AdminLayout() {
         applicationServerKey: urlBase64ToUint8Array(public_key)
       });
       
-      await fetch('http://localhost:8000/api/admin/subscribe', {
+      await fetch(`${API_BASE_URL}/api/admin/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscription.toJSON())

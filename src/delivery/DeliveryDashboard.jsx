@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { MapPin, Phone, Package, Clock, CheckCircle, User, ShieldAlert } from 'lucide-react';
 
 export default function DeliveryDashboard({ user, orders, loading, onRefresh }) {
@@ -8,7 +9,7 @@ export default function DeliveryDashboard({ user, orders, loading, onRefresh }) 
       if (eta) payload.eta = eta;
       if (pin) payload.pin = pin;
 
-      const res = await fetch(`http://localhost:8000/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

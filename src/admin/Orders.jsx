@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { useLocation } from 'react-router-dom';
 import { generateInvoice } from '../utils/generateInvoice';
 
@@ -44,7 +45,7 @@ function Orders() {
 
   const fetchHubs = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/hubs');
+      const response = await fetch(`${API_BASE_URL}/api/hubs`);
       const data = await response.json();
       setHubs(data);
     } catch (error) {
@@ -54,7 +55,7 @@ function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/orders');
+      const response = await fetch(`${API_BASE_URL}/api/orders`);
       const data = await response.json();
       setOrders(data);
     } catch (error) {
@@ -70,7 +71,7 @@ function Orders() {
     setAssignModalOpen(true);
     setSelectedDpId('');
     try {
-      const response = await fetch(`http://localhost:8000/api/delivery-personnel/hub/${hubId}`);
+      const response = await fetch(`${API_BASE_URL}/api/delivery-personnel/hub/${hubId}`);
       if (response.ok) {
         const data = await response.json();
         setDeliveryPersonnel(data);
@@ -83,7 +84,7 @@ function Orders() {
   const handleManualAssign = async () => {
     if (!selectedDpId) return;
     try {
-      const response = await fetch(`http://localhost:8000/api/orders/${assignOrderId}/assign`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${assignOrderId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ delivery_partner_id: parseInt(selectedDpId) })
@@ -103,7 +104,7 @@ function Orders() {
   const deleteOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to permanently delete this order?")) {
       try {
-        const response = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
           method: 'DELETE'
         });
         if (response.ok) {

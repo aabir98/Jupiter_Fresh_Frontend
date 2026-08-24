@@ -7,6 +7,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { jwtDecode } from "jwt-decode";
 import AddressMap from './components/AddressMap';
 import { generateInvoice } from './utils/generateInvoice';
+import { API_BASE_URL } from './config';
 
 // Custom hook to sync state with localStorage
 function useLocalStorage(key, initialValue) {
@@ -141,7 +142,7 @@ const OrderRatingWidget = ({ order, onReviewSubmitted }) => {
     }
     setSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/orders/${order.id}/rate`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${order.id}/rate`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, review })
@@ -222,7 +223,7 @@ const DeliveryRatingWidget = ({ order, onReviewSubmitted }) => {
     if (!rating) return;
     setSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/orders/${order.id}/rate-delivery`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${order.id}/rate-delivery`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, review })
@@ -330,7 +331,7 @@ const ProductImageSlider = ({ product }) => {
 
   if (!hasMultiple) {
     return product.image ? (
-      <img src={product.image?.startsWith('/uploads') ? `http://localhost:8000${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
+      <img src={product.image?.startsWith('/uploads') ? `${API_BASE_URL}${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
     ) : (
       <span style={{ fontSize: '48px' }} className={product.in_stock === 0 ? 'greyed-out' : ''}>{product.emoji}</span>
     );
@@ -356,7 +357,7 @@ const ProductImageSlider = ({ product }) => {
         {allImages.map((img, i) => (
           <img
             key={i}
-            src={img.startsWith('/uploads') ? `http://localhost:8000${img}` : img}
+            src={img.startsWith('/uploads') ? `${API_BASE_URL}${img}` : img}
             alt={`${product.name} ${i}`}
             style={{ position: 'relative', flex: '0 0 100%', scrollSnapAlign: 'center', objectFit: 'cover', width: '100%', height: '100%', borderRadius: '16px', mixBlendMode: 'multiply' }}
             className={product.in_stock === 0 ? 'greyed-out' : ''}
@@ -537,7 +538,7 @@ function App() {
       });
 
       PushNotifications.addListener('registration', (token) => {
-        fetch('http://localhost:8000/api/device-tokens', {
+        fetch(`${API_BASE_URL}/api/device-tokens`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: token.value })
@@ -564,7 +565,7 @@ function App() {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/home-feed');
+        const res = await fetch(`${API_BASE_URL}/api/home-feed`);
         const data = await res.json();
 
         const {
@@ -682,7 +683,7 @@ function App() {
   useEffect(() => {
     const fetchUserData = () => {
       if (user && user.email) {
-        fetch(`http://localhost:8000/api/addresses/${user.email}`)
+        fetch(`${API_BASE_URL}/api/addresses/${user.email}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) {
@@ -705,7 +706,7 @@ function App() {
           })
           .catch(err => console.error("Error fetching addresses:", err));
 
-        fetch(`http://localhost:8000/api/user/notifications?email=${encodeURIComponent(user.email)}`)
+        fetch(`${API_BASE_URL}/api/user/notifications?email=${encodeURIComponent(user.email)}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) setUserNotifications(data);
@@ -717,7 +718,7 @@ function App() {
       }
 
       if (user && user.phone) {
-        fetch(`http://localhost:8000/api/orders/user/${user.phone}`)
+        fetch(`${API_BASE_URL}/api/orders/user/${user.phone}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) setPlacedOrders(data);
@@ -808,7 +809,7 @@ function App() {
 
     try {
       if (saveAddressLabel.trim() && user.email) {
-        fetch('http://localhost:8000/api/addresses', {
+        fetch(`${API_BASE_URL}/api/addresses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -834,7 +835,7 @@ function App() {
         }).catch(err => console.error("Error saving address:", err));
       }
 
-      const response = await fetch('http://localhost:8000/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrder)
@@ -896,7 +897,7 @@ function App() {
     const addressStr = addressParts.join(', ');
     
     try {
-      const response = await fetch(`http://localhost:8000/api/addresses/${editingAddressId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/addresses/${editingAddressId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -929,7 +930,7 @@ function App() {
     if (e) e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this saved address?")) {
       try {
-        const response = await fetch(`http://localhost:8000/api/addresses/${addressId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/addresses/${addressId}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -965,7 +966,7 @@ function App() {
   const cancelOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to cancel this order?")) {
       try {
-        const response = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -1114,7 +1115,7 @@ function App() {
   const categories = React.useMemo(() => {
     return visibleSubcategories.map(c => ({
       name: c.name,
-      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `http://localhost:8000${c.image}` : c.image) : '/category-icons/all.png'
+      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `${API_BASE_URL}${c.image}` : c.image) : '/category-icons/all.png'
     }));
   }, [visibleSubcategories]);
 
@@ -1221,7 +1222,7 @@ function App() {
   const categoryTabCategories = React.useMemo(() => {
     return categoryTabVisibleSubcategories.map(c => ({
       name: c.name,
-      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `http://localhost:8000${c.image}` : c.image) : '/category-icons/all.png'
+      iconUrl: c.image ? (c.image.startsWith('/uploads') ? `${API_BASE_URL}${c.image}` : c.image) : '/category-icons/all.png'
     }));
   }, [categoryTabVisibleSubcategories]);
 
@@ -1250,7 +1251,7 @@ function App() {
   const handleNativeGoogleLogin = async () => {
     try {
       const user = await GoogleAuth.signIn();
-      const response = await fetch(`http://localhost:8000/api/customers/${user.email}`);
+      const response = await fetch(`${API_BASE_URL}/api/customers/${user.email}`);
       if (response.ok) {
         const customer = await response.json();
         setUser({ name: user.name, email: user.email, picture: user.imageUrl, phone: customer.phone });
@@ -1274,7 +1275,7 @@ function App() {
   const handleGoogleSuccess = async (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     try {
-      const response = await fetch(`http://localhost:8000/api/customers/${decoded.email}`);
+      const response = await fetch(`${API_BASE_URL}/api/customers/${decoded.email}`);
       if (response.ok) {
         const customer = await response.json();
         setUser({ name: decoded.name, email: decoded.email, picture: decoded.picture, phone: customer.phone });
@@ -1298,7 +1299,7 @@ function App() {
     const finalUser = { ...tempUser, phone: phoneInput };
 
     try {
-      const response = await fetch('http://localhost:8000/api/customers', {
+      const response = await fetch(`${API_BASE_URL}/api/customers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalUser)
@@ -1583,7 +1584,7 @@ function App() {
                         </div>
                       )}
                       {item.image ? (
-                        <img src={item.image?.startsWith('/uploads') ? `http://localhost:8000${item.image}` : item.image} alt={item.name} className={`product-image ${item.in_stock === 0 ? 'greyed-out' : ''}`} />
+                        <img src={item.image?.startsWith('/uploads') ? `${API_BASE_URL}${item.image}` : item.image} alt={item.name} className={`product-image ${item.in_stock === 0 ? 'greyed-out' : ''}`} />
                       ) : (
                         <span style={{ fontSize: '48px' }} className={item.in_stock === 0 ? 'greyed-out' : ''}>{item.emoji}</span>
                       )}
@@ -2122,7 +2123,7 @@ function App() {
                             </div>
                           )}
                           {product.image ? (
-                            <img src={product.image?.startsWith('/uploads') ? `http://localhost:8000${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
+                            <img src={product.image?.startsWith('/uploads') ? `${API_BASE_URL}${product.image}` : product.image} alt={product.name} className={`product-image ${product.in_stock === 0 ? 'greyed-out' : ''}`} />
                           ) : (
                             <span style={{ fontSize: '48px' }} className={product.in_stock === 0 ? 'greyed-out' : ''}>{product.emoji}</span>
                           )}
@@ -2189,7 +2190,7 @@ function App() {
                     {banners.map((banner, idx) => (
                       <img
                         key={idx}
-                        src={`http://localhost:8000${banner.image}`}
+                        src={`${API_BASE_URL}${banner.image}`}
                         alt="Promo Banner"
                         style={{
                           flex: '0 0 100%',
@@ -2590,7 +2591,7 @@ function App() {
                   <div className="cart-items-section" style={{ padding: '0', backgroundColor: 'transparent', marginBottom: '24px' }}>
                     {cartDetails.items.map((item, idx) => (
                       <div key={idx} className="cart-item-row-new">
-                        <img src={item.image?.startsWith('/uploads') ? `http://localhost:8000${item.image}` : item.image} alt={item.name} className="cart-item-image" />
+                        <img src={item.image?.startsWith('/uploads') ? `${API_BASE_URL}${item.image}` : item.image} alt={item.name} className="cart-item-image" />
                         <div className="cart-item-info">
                           <h4 className="cart-item-name">
                             {item.name} {item.selectedSize && <span style={{ fontSize: '12px', color: '#64748b' }}>({item.selectedSize.toUpperCase()})</span>}
@@ -3374,7 +3375,7 @@ function App() {
                     zIndex: 10 - idx
                   }}>
                     {item.image ? (
-                      <img src={item.image.startsWith('/uploads') ? `http://localhost:8000${item.image}` : item.image} alt="item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={item.image.startsWith('/uploads') ? `${API_BASE_URL}${item.image}` : item.image} alt="item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <ShoppingBag size={20} color="var(--primary)" />
                     )}

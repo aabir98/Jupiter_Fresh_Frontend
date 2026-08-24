@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Search, MapPin, Star, Calendar, X, Clock, CheckCircle, ShieldAlert } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -26,7 +27,7 @@ function DeliveryPartners() {
 
   const fetchHubs = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/hubs');
+      const response = await fetch(`${API_BASE_URL}/api/hubs`);
       const data = await response.json();
       setHubs(data);
     } catch (error) {
@@ -47,8 +48,8 @@ function DeliveryPartners() {
       }
 
       const [activeRes, blacklistedRes] = await Promise.all([
-        fetch(`http://localhost:8000/api/admin/delivery-partners/performance?is_deleted=0&${params.toString()}`),
-        fetch(`http://localhost:8000/api/admin/delivery-partners/performance?is_deleted=1&${params.toString()}`)
+        fetch(`${API_BASE_URL}/api/admin/delivery-partners/performance?is_deleted=0&${params.toString()}`),
+        fetch(`${API_BASE_URL}/api/admin/delivery-partners/performance?is_deleted=1&${params.toString()}`)
       ]);
 
       if (activeRes.ok) {
@@ -68,7 +69,7 @@ function DeliveryPartners() {
 
   const toggleStatus = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/delivery-personnel/${id}/toggle-status`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/delivery-personnel/${id}/toggle-status`, {
         method: 'PATCH'
       });
       if (response.ok) {
@@ -82,7 +83,7 @@ function DeliveryPartners() {
   const deletePartner = async (id) => {
     if (window.confirm('Are you sure you want to permanently delete this delivery partner? They will be moved to the Blacklisted Delivery Partners list.')) {
       try {
-        const response = await fetch(`http://localhost:8000/api/admin/delivery-personnel/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/delivery-personnel/${id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
