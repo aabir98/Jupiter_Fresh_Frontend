@@ -446,18 +446,9 @@ function App() {
     }
   });
 
-  const unratedOrder = useMemo(() => {
-    // Find the single most recent delivered order
-    const newestDelivered = placedOrders.find(o => o.status === 'Delivered');
-    if (!newestDelivered) return null;
-
-    // Only prompt if this most recent order is unrated (order or delivery partner) and not dismissed
-    const isUnrated = !newestDelivered.rating || !newestDelivered.delivery_partner_rating;
-    if (isUnrated && !dismissedRatings.includes(newestDelivered.id)) {
-      return newestDelivered;
-    }
-    return null;
-  }, [placedOrders, dismissedRatings]);
+  // Proactive rating popup is disabled to prevent annoying overlay popups.
+  // Users can rate delivered orders manually under the "My Orders" tab.
+  const unratedOrder = null;
 
   const dismissRating = (orderId) => {
     // Dismiss all currently loaded delivered orders so they don't prompt again
