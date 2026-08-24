@@ -2397,15 +2397,13 @@ function App() {
 
                 {['Fashion', 'Electronics'].includes(categoryTabMainCategory) && (
                   <div style={{
-                    padding: '8px 16px',
+                    padding: '8px 8px',
                     display: 'flex',
-                    gap: '8px',
+                    gap: '4px',
                     alignItems: 'center',
                     backgroundColor: '#fff',
                     borderBottom: '1px solid #f1f5f9',
-                    overflowX: 'auto',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
+                    overflowX: 'hidden',
                     width: '100%',
                     boxSizing: 'border-box'
                   }}>
@@ -2415,10 +2413,10 @@ function App() {
                           value={categoryTabGenderFilter}
                           onChange={(e) => setCategoryTabGenderFilter(e.target.value)}
                           style={{
-                            padding: '6px 24px 6px 12px',
+                            padding: '5px 16px 5px 6px',
                             borderRadius: '16px',
                             border: '1px solid #e2e8f0',
-                            fontSize: '12px',
+                            fontSize: '10.5px',
                             fontWeight: '500',
                             backgroundColor: '#f8fafc',
                             color: '#334155',
@@ -2427,12 +2425,12 @@ function App() {
                             outline: 'none'
                           }}
                         >
-                          <option value="All">All Genders</option>
+                          <option value="All">Gender</option>
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
                           <option value="UNISEX">Unisex</option>
                         </select>
-                        <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '9px' }}>▼</span>
+                        <span style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '7px' }}>▼</span>
                       </div>
                     )}
                     {categoryTabMainCategory === 'Fashion' && categoryTabAvailableSizes.length > 0 && (
@@ -2441,10 +2439,10 @@ function App() {
                           value={categoryTabSizeFilter}
                           onChange={(e) => setCategoryTabSizeFilter(e.target.value)}
                           style={{
-                            padding: '6px 24px 6px 12px',
+                            padding: '5px 16px 5px 6px',
                             borderRadius: '16px',
                             border: '1px solid #e2e8f0',
-                            fontSize: '12px',
+                            fontSize: '10.5px',
                             fontWeight: '500',
                             backgroundColor: '#f8fafc',
                             color: '#334155',
@@ -2453,12 +2451,12 @@ function App() {
                             outline: 'none'
                           }}
                         >
-                          <option value="All">All Sizes</option>
+                          <option value="All">Size</option>
                           {categoryTabAvailableSizes.map(size => (
                             <option key={size} value={size}>{size}</option>
                           ))}
                         </select>
-                        <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '9px' }}>▼</span>
+                        <span style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '7px' }}>▼</span>
                       </div>
                     )}
                     <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -2466,10 +2464,10 @@ function App() {
                         value={categoryTabPriceSort}
                         onChange={(e) => setCategoryTabPriceSort(e.target.value)}
                         style={{
-                          padding: '6px 24px 6px 12px',
+                          padding: '5px 16px 5px 6px',
                           borderRadius: '16px',
                           border: '1px solid #e2e8f0',
-                          fontSize: '12px',
+                          fontSize: '10.5px',
                           fontWeight: '500',
                           backgroundColor: '#f8fafc',
                           color: '#334155',
@@ -2478,11 +2476,11 @@ function App() {
                           outline: 'none'
                         }}
                       >
-                        <option value="">Sort by Price</option>
-                        <option value="low_to_high">Price: Low to High</option>
-                        <option value="high_to_low">Price: High to Low</option>
+                        <option value="">Price</option>
+                        <option value="low_to_high">Low to High</option>
+                        <option value="high_to_low">High to Low</option>
                       </select>
-                      <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '9px' }}>▼</span>
+                      <span style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '7px' }}>▼</span>
                     </div>
                   </div>
                 )}
