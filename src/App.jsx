@@ -31,7 +31,7 @@ function useLocalStorage(key, initialValue) {
 
   return [storedValue, setStoredValue];
 }
-import { Search, ChevronDown, User, Heart, ShoppingBag, MapPin, Grid, PlayCircle, Tag, Zap, ChevronUp, ShoppingCart, Leaf, Timer, Shield, Home, ArrowLeft, X, Bell, ChevronRight, Menu, Store, Truck, Edit2, Trash2 } from 'lucide-react';
+import { Search, ChevronDown, User, Heart, ShoppingBag, MapPin, Grid, PlayCircle, Tag, Zap, ChevronUp, ShoppingCart, Leaf, Timer, Shield, Home, ArrowLeft, X, Bell, ChevronRight, Menu, Store, Truck, Edit2, Trash2, CreditCard, Smartphone, Building } from 'lucide-react';
 
 // categoryData has been moved to the backend database
 
@@ -770,7 +770,9 @@ function App() {
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editPhoneInput, setEditPhoneInput] = useState('');
 
-
+  // Payment Method State
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('COD'); // 'CARD' | 'UPI' | 'NETBANKING' | 'COD'
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const handlePlaceOrder = async () => {
     if (!user) {
@@ -797,62 +799,206 @@ function App() {
     ].filter(Boolean);
     const addressStr = addressParts.join(', ');
 
+    const orderId = 'JF-' + Math.floor(10000 + Math.random() * 90000);
+    const orderDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const formattedPaymentMethod = selectedPaymentMethod === 'COD' ? 'Pay on Delivery' : (
+      selectedPaymentMethod === 'CARD' ? 'Card' :
+      selectedPaymentMethod === 'UPI' ? 'UPI' : 'Netbanking'
+    );
+
     const newOrder = {
-      id: 'JF-' + Math.floor(10000 + Math.random() * 90000),
-      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      id: orderId,
+      date: orderDate,
       items: cartDetails.items,
       grandTotal: cartDetails.grandTotal,
-      deliveryDetails: { ...deliveryDetails, address: addressStr, email: user.email, deliveryFee: cartDetails.deliveryFee }
+      deliveryDetails: { ...deliveryDetails, address: addressStr, email: user.email, deliveryFee: cartDetails.deliveryFee },
+      paymentMethod: formattedPaymentMethod,
+      paymentStatus: selectedPaymentMethod === 'COD' ? 'Pending' : 'Paid'
     };
 
-    try {
-      if (saveAddressLabel.trim() && user.email) {
-        fetch(`${API_BASE_URL}/api/addresses`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+    // Save address if requested
+    if (saveAddressLabel.trim() && user.email) {
+      fetch(`${API_BASE_URL}/api/addresses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: user.email,
+          label: saveAddressLabel.trim(),
+          address: addressStr,
+          landmark: deliveryDetails.landmark || '',
+          lat: deliveryDetails.lat,
+          lng: deliveryDetails.lng
+        })
+      }).then(res => res.json()).then(data => {
+        if (data.id) {
+          setSavedAddresses([{
+            id: data.id,
             userEmail: user.email,
             label: saveAddressLabel.trim(),
             address: addressStr,
             landmark: deliveryDetails.landmark || '',
             lat: deliveryDetails.lat,
             lng: deliveryDetails.lng
-          })
-        }).then(res => res.json()).then(data => {
-          if (data.id) {
-            setSavedAddresses([{
-              id: data.id,
-              userEmail: user.email,
-              label: saveAddressLabel.trim(),
-              address: addressStr,
-              landmark: deliveryDetails.landmark || '',
-              lat: deliveryDetails.lat,
-              lng: deliveryDetails.lng
-            }, ...savedAddresses]);
-          }
-        }).catch(err => console.error("Error saving address:", err));
-      }
+          }, ...savedAddresses]);
+        }
+      }).catch(err => console.error("Error saving address:", err));
+    }
 
-      const response = await fetch(`${API_BASE_URL}/api/orders`, {
+    // 1. Pay on Delivery (COD) Flow
+    if (selectedPaymentMethod === 'COD') {
+      try {
+        setIsPlacingOrder(true);
+        const response = await fetch(`${API_BASE_URL}/api/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newOrder)
+        });
+        if (response.ok) {
+          const freshOrder = { ...newOrder, status: 'Placed' };
+          setPlacedOrders([freshOrder, ...placedOrders]);
+          setCart({});
+          setAppliedCoupon(null);
+          setCouponCode('');
+          setSaveAddressLabel('');
+          setAddingNewAddress(false);
+          setActiveTab('orders');
+        } else {
+          alert("Failed to place order.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Network error. Please try again.");
+      } finally {
+        setIsPlacingOrder(false);
+      }
+      return;
+    }
+
+    // 2. Online Payment Flow (Razorpay for Card, UPI, Netbanking)
+    try {
+      setIsPlacingOrder(true);
+      const rzpOrderRes = await fetch(`${API_BASE_URL}/api/razorpay/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newOrder)
+        body: JSON.stringify({
+          amount: cartDetails.grandTotal,
+          currency: 'INR',
+          receipt: orderId
+        })
       });
-      if (response.ok) {
-        const freshOrder = { ...newOrder, status: 'Placed' };
-        setPlacedOrders([freshOrder, ...placedOrders]);
-        setCart({});
-        setAppliedCoupon(null);
-        setCouponCode('');
-        setSaveAddressLabel('');
-        setAddingNewAddress(false);
-        setActiveTab('orders');
+
+      if (!rzpOrderRes.ok) {
+        alert("Unable to initiate online payment. Please try again.");
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      const rzpOrderData = await rzpOrderRes.json();
+
+      // If Razorpay API keys are in test/mock mode or using placeholder keys
+      if (rzpOrderData.isMock || rzpOrderData.key === 'rzp_test_5W9Z3kK4z5Xy') {
+        const confirmTestPayment = window.confirm(
+          `[Razorpay Test Gateway]\n\nPay ₹${cartDetails.grandTotal} via ${formattedPaymentMethod}?\n\nClick OK to complete test payment.`
+        );
+
+        if (confirmTestPayment) {
+          const mockPaymentId = 'pay_test_' + Math.floor(10000000 + Math.random() * 90000000);
+          const verifyRes = await fetch(`${API_BASE_URL}/api/razorpay/verify-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: rzpOrderData.id,
+              razorpay_payment_id: mockPaymentId,
+              razorpay_signature: 'test_signature',
+              paymentMethod: formattedPaymentMethod,
+              orderData: newOrder
+            })
+          });
+
+          if (verifyRes.ok) {
+            const freshOrder = { ...newOrder, status: 'Placed', paymentStatus: 'Paid' };
+            setPlacedOrders([freshOrder, ...placedOrders]);
+            setCart({});
+            setAppliedCoupon(null);
+            setCouponCode('');
+            setSaveAddressLabel('');
+            setAddingNewAddress(false);
+            setActiveTab('orders');
+          } else {
+            alert("Payment verification failed.");
+          }
+        }
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      const options = {
+        key: rzpOrderData.key,
+        amount: rzpOrderData.amount,
+        currency: rzpOrderData.currency || "INR",
+        name: "Jupiter Fresh",
+        description: `Payment for Order #${orderId}`,
+        image: "/logo.png",
+        order_id: rzpOrderData.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch(`${API_BASE_URL}/api/razorpay/verify-payment`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                paymentMethod: formattedPaymentMethod,
+                orderData: newOrder
+              })
+            });
+
+            if (verifyRes.ok) {
+              const freshOrder = { ...newOrder, status: 'Placed', paymentStatus: 'Paid' };
+              setPlacedOrders([freshOrder, ...placedOrders]);
+              setCart({});
+              setAppliedCoupon(null);
+              setCouponCode('');
+              setSaveAddressLabel('');
+              setAddingNewAddress(false);
+              setActiveTab('orders');
+            } else {
+              alert("Payment verification failed. Please contact support if amount was deducted.");
+            }
+          } catch (verifyErr) {
+            console.error("Payment verification error:", verifyErr);
+            alert("Network error during payment verification.");
+          } finally {
+            setIsPlacingOrder(false);
+          }
+        },
+        prefill: {
+          name: deliveryDetails.name || user.name || '',
+          email: user.email || '',
+          contact: deliveryDetails.phone || user.phone || ''
+        },
+        theme: {
+          color: "#16a34a"
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPlacingOrder(false);
+          }
+        }
+      };
+
+      if (window.Razorpay) {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
       } else {
-        alert("Failed to place order.");
+        alert("Payment Gateway loading... Please try again in a moment.");
+        setIsPlacingOrder(false);
       }
     } catch (err) {
-      console.error(err);
-      alert("Network error. Please try again.");
+      console.error("Online payment error:", err);
+      alert("Error initiating online payment.");
+      setIsPlacingOrder(false);
     }
   };
 
@@ -1271,8 +1417,12 @@ function App() {
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    const decoded = jwtDecode(credentialResponse.credential);
     try {
+      if (!credentialResponse || !credentialResponse.credential) {
+        alert("Google Login did not return valid credentials.");
+        return;
+      }
+      const decoded = jwtDecode(credentialResponse.credential);
       const response = await fetch(`${API_BASE_URL}/api/customers/${decoded.email}`);
       if (response.ok) {
         const customer = await response.json();
@@ -1284,8 +1434,8 @@ function App() {
         setIsCollectingPhone(true);
       }
     } catch (err) {
-      console.error(err);
-      alert("Error checking customer details.");
+      console.error("Google Login Success Handler Error:", err);
+      alert("Error logging in with Google: " + (err.message || err));
     }
   };
 
@@ -2899,6 +3049,107 @@ function App() {
                     )}
                   </div>
 
+                  {/* Payment Method Selection */}
+                  <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#1e293b', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Shield size={18} color="#16a34a" /> Choose Payment Option
+                    </h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Card Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('CARD')}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
+                          border: selectedPaymentMethod === 'CARD' ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                          backgroundColor: selectedPaymentMethod === 'CARD' ? '#f0fdf4' : 'white',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CreditCard size={20} color="#0284c7" />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Pay by Card</div>
+                            <div style={{ fontSize: '11px', color: '#64748b' }}>Visa, Mastercard, RuPay & more (Razorpay)</div>
+                          </div>
+                        </div>
+                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'CARD'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                      </div>
+
+                      {/* UPI Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('UPI')}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
+                          border: selectedPaymentMethod === 'UPI' ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                          backgroundColor: selectedPaymentMethod === 'UPI' ? '#f0fdf4' : 'white',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Smartphone size={20} color="#d97706" />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Pay by UPI</div>
+                            <div style={{ fontSize: '11px', color: '#64748b' }}>Google Pay, PhonePe, Paytm, BHIM</div>
+                          </div>
+                        </div>
+                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'UPI'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                      </div>
+
+                      {/* Netbanking Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('NETBANKING')}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
+                          border: selectedPaymentMethod === 'NETBANKING' ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                          backgroundColor: selectedPaymentMethod === 'NETBANKING' ? '#f0fdf4' : 'white',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Building size={20} color="#475569" />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Netbanking</div>
+                            <div style={{ fontSize: '11px', color: '#64748b' }}>All major Indian banks</div>
+                          </div>
+                        </div>
+                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'NETBANKING'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                      </div>
+
+                      {/* Pay on Delivery (COD) Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('COD')}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
+                          border: selectedPaymentMethod === 'COD' ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                          backgroundColor: selectedPaymentMethod === 'COD' ? '#f0fdf4' : 'white',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Truck size={20} color="#16a34a" />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Pay on Delivery</div>
+                            <div style={{ fontSize: '11px', color: '#64748b' }}>Cash or UPI at your doorstep</div>
+                          </div>
+                        </div>
+                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'COD'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Bill Details */}
                   <div className="bill-details-section" style={{ borderRadius: '12px' }}>
                     <h3 className="bill-details-title">Bill Details</h3>
@@ -2926,10 +3177,10 @@ function App() {
                   <button
                     className="place-order-btn"
                     onClick={handlePlaceOrder}
-                    disabled={isOutOfRange}
-                    style={isOutOfRange ? { backgroundColor: '#94a3b8', cursor: 'not-allowed' } : {}}
+                    disabled={isOutOfRange || isPlacingOrder}
+                    style={isOutOfRange || isPlacingOrder ? { backgroundColor: '#94a3b8', cursor: 'not-allowed' } : {}}
                   >
-                    <span>Place Order</span>
+                    <span>{isPlacingOrder ? 'Processing...' : 'Place Order'}</span>
                     <span>₹{cartDetails.grandTotal}</span>
                   </button>
                 </div>
@@ -2967,7 +3218,14 @@ function App() {
                         <div key={order.id} className="order-card" style={{ backgroundColor: 'var(--white)', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
                           <div>
-                            <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>{order.id}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>{order.id}</span>
+                              {(order.paymentMethod || order.payment_method) && (
+                                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', backgroundColor: (order.paymentMethod || order.payment_method) === 'Pay on Delivery' || (order.paymentMethod || order.payment_method) === 'COD' ? '#fef3c7' : '#dcfce7', color: (order.paymentMethod || order.payment_method) === 'Pay on Delivery' || (order.paymentMethod || order.payment_method) === 'COD' ? '#92400e' : '#166534', fontWeight: '700' }}>
+                                  {order.paymentMethod || order.payment_method}
+                                </span>
+                              )}
+                            </div>
                             <p style={{ fontSize: '12px', color: 'var(--gray-text)', margin: '4px 0 0 0' }}>{order.date}</p>
                           </div>
                           <span style={{
