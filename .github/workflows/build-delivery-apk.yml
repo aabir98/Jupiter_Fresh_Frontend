@@ -24,7 +24,7 @@ jobs:
       - name: Inject Delivery Environment Variable
         run: |
           echo "VITE_APP_TARGET=delivery" > .env
-          echo "VITE_API_URL=https://jupiterfresh.co.in" >> .env
+          echo "VITE_API_URL=https://15.206.97.54.nip.io" >> .env
 
       - name: Build Web App
         run: npm run build
