@@ -8,7 +8,8 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import DeliveryDashboard from './DeliveryDashboard';
 import DeliveryHistory from './DeliveryHistory';
 import DeliveryAccount from './DeliveryAccount';
-import { MapPin, Phone, User, Home, Package, Clock, History, Bell } from 'lucide-react';
+import DeliveryWallet from './DeliveryWallet';
+import { MapPin, Phone, User, Home, Package, Clock, History, Bell, Wallet } from 'lucide-react';
 
 export default function DeliveryLayout() {
   const [deliveryUser, setDeliveryUser] = useState(() => {
@@ -197,6 +198,18 @@ export default function DeliveryLayout() {
   const activeOrdersCount = activeOrders.length;
   const unreadOrders = activeOrders.filter(o => !viewedNotifIds.includes(o.id));
 
+  // Calculate pending cash to be collected for wallet badge
+  const pendingCodCash = orders
+    .filter(o => o.status === 'Delivered' && (o.payment_method === 'COD' || o.payment_method === 'Pay on Delivery') && (!o.cash_cleared || o.cash_cleared === 0))
+    .reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+
+  let walletBadgeText = null;
+  if (pendingCodCash > 1000) {
+    walletBadgeText = '1K+';
+  } else if (pendingCodCash > 0) {
+    walletBadgeText = `${Math.round(pendingCodCash)}`;
+  }
+
   const handleBellClick = () => {
     if (!isNotificationOpen) {
       setIsNotificationOpen(true);
@@ -351,6 +364,7 @@ export default function DeliveryLayout() {
           <Routes>
             <Route path="/active" element={<DeliveryDashboard user={deliveryUser} orders={orders} loading={loadingOrders} onRefresh={fetchOrders} />} />
             <Route path="/history" element={<DeliveryHistory user={deliveryUser} orders={orders} loading={loadingOrders} />} />
+            <Route path="/wallet" element={<DeliveryWallet user={deliveryUser} />} />
             <Route path="/account" element={<DeliveryAccount user={deliveryUser} setUser={setDeliveryUser} onLogout={handleLogout} />} />
             <Route path="/*" element={<Navigate to="/delivery/active" replace />} />
           </Routes>
@@ -359,7 +373,7 @@ export default function DeliveryLayout() {
         {/* Bottom Navigation */}
         <nav style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', backgroundColor: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '12px 0', boxShadow: '0 -2px 10px rgba(0,0,0,0.05)', borderTop: '1px solid #e2e8f0', zIndex: 10 }}>
           <div onClick={() => navigate('/delivery/active')} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'active' || activeTab === 'delivery' ? 'var(--primary-green)' : '#94a3b8' }}>
-            <Home size={24} />
+            <Home size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Active</span>
             {activeOrdersCount > 0 && (
               <span style={{
@@ -372,11 +386,24 @@ export default function DeliveryLayout() {
             )}
           </div>
           <div onClick={() => navigate('/delivery/history')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'history' ? 'var(--primary-green)' : '#94a3b8' }}>
-            <History size={24} />
+            <History size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>History</span>
           </div>
+          <div onClick={() => navigate('/delivery/wallet')} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'wallet' ? 'var(--primary-green)' : '#94a3b8' }}>
+            <Wallet size={22} />
+            <span style={{ fontSize: '11px', fontWeight: '600' }}>Wallet</span>
+            {walletBadgeText && (
+              <span style={{
+                position: 'absolute', top: '-4px', right: '-10px', backgroundColor: '#ef4444', color: 'white',
+                fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '10px',
+                border: '2px solid white', lineHeight: '1'
+              }}>
+                {walletBadgeText}
+              </span>
+            )}
+          </div>
           <div onClick={() => navigate('/delivery/account')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'account' ? 'var(--primary-green)' : '#94a3b8' }}>
-            <User size={24} />
+            <User size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Account</span>
           </div>
         </nav>
@@ -384,3 +411,4 @@ export default function DeliveryLayout() {
     </div>
   );
 }
+

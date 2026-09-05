@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
-import { Search, MapPin, Star, Calendar, X, Clock, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Search, MapPin, Star, Calendar, X, Clock, CheckCircle, ShieldAlert, Wallet, Banknote } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -98,6 +98,28 @@ function DeliveryPartners() {
     }
   };
 
+  const clearPayment = async (dpId, dpName, amount) => {
+    if (window.confirm(`Are you sure you want to clear pending cash payment of ₹${amount.toFixed(2)} from ${dpName}? This will reset both Admin cash to collect and Delivery Partner wallet balance to ₹0.`)) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/delivery-personnel/${dpId}/clear-payment`, {
+          method: 'POST'
+        });
+        if (response.ok) {
+          alert(`Pending cash payment of ₹${amount.toFixed(2)} for ${dpName} cleared successfully!`);
+          fetchPerformance();
+          if (selectedPartner && selectedPartner.id === dpId) {
+            setSelectedPartner(prev => prev ? { ...prev, cash_to_collect: 0 } : null);
+          }
+        } else {
+          alert("Failed to clear payment.");
+        }
+      } catch (error) {
+        console.error("Error clearing payment:", error);
+        alert("Network error clearing payment.");
+      }
+    }
+  };
+
   const filteredPartners = partners.filter(dp => 
     dp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     dp.phone.includes(searchQuery)
@@ -169,6 +191,7 @@ function DeliveryPartners() {
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Hub</th>
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Status</th>
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Delivered Orders</th>
+                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Cash to Collect</th>
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Overall Rating</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid #e2e8f0', fontSize: '13px', color: '#475569' }}>Actions</th>
                 </tr>
@@ -176,7 +199,7 @@ function DeliveryPartners() {
               <tbody>
                 {filteredPartners.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No active delivery partners found.</td>
+                    <td colSpan="7" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No active delivery partners found.</td>
                   </tr>
                 ) : (
                   filteredPartners.map(dp => (
@@ -201,6 +224,17 @@ function DeliveryPartners() {
                         {dp.delivered_count}
                       </td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
+                        {(dp.cash_to_collect || 0) > 0 ? (
+                          <span style={{ backgroundColor: '#fef3c7', color: '#b45309', padding: '6px 12px', borderRadius: '16px', fontSize: '14px', fontWeight: '800', border: '1px solid #fcd34d', display: 'inline-block' }}>
+                            ₹{dp.cash_to_collect.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '16px', fontSize: '13px', fontWeight: '700', border: '1px solid #86efac', display: 'inline-block' }}>
+                            ₹0.00 (Cleared)
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#fff7ed', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ffedd5' }}>
                           <Star size={14} fill="#ea580c" color="#ea580c" />
                           <span style={{ fontWeight: 'bold', color: '#ea580c', fontSize: '13px' }}>{dp.rating ? parseFloat(dp.rating).toFixed(1) : 'N/A'}</span>
@@ -209,6 +243,14 @@ function DeliveryPartners() {
                       </td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          {(dp.cash_to_collect || 0) > 0 && (
+                            <button 
+                              onClick={() => clearPayment(dp.id, dp.name, dp.cash_to_collect)}
+                              style={{ padding: '6px 12px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                            >
+                              Clear Payment
+                            </button>
+                          )}
                           <button 
                             onClick={() => toggleStatus(dp.id)}
                             style={{ padding: '6px 12px', backgroundColor: dp.is_disabled ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
@@ -325,6 +367,48 @@ function DeliveryPartners() {
               >
                 <X size={24} color="#64748b" />
               </button>
+            </div>
+
+            {/* Cash to Collect Summary Box */}
+            <div style={{
+              backgroundColor: (selectedPartner.cash_to_collect || 0) > 0 ? '#fff7ed' : '#f0fdf4',
+              border: (selectedPartner.cash_to_collect || 0) > 0 ? '1px solid #ffedd5' : '1px solid #bbf7d0',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '24px',
+              display: 'flex',
+              justify: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: (selectedPartner.cash_to_collect || 0) > 0 ? '#c2410c' : '#15803d', textTransform: 'uppercase' }}>
+                  Cash to be Collected (Pending COD)
+                </div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: (selectedPartner.cash_to_collect || 0) > 0 ? '#9a3412' : '#166534', marginTop: '4px' }}>
+                  ₹{(selectedPartner.cash_to_collect || 0).toFixed(2)}
+                </div>
+              </div>
+
+              {(selectedPartner.cash_to_collect || 0) > 0 && (
+                <button
+                  onClick={() => clearPayment(selectedPartner.id, selectedPartner.name, selectedPartner.cash_to_collect)}
+                  style={{
+                    backgroundColor: '#16a34a',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 16px',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Banknote size={16} /> Clear Payment
+                </button>
+              )}
             </div>
 
             <div style={{ marginBottom: '24px' }}>
