@@ -1,1 +1,2 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://jupiterfresh.co.in';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.tajacart.in';
+
