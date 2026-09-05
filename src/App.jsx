@@ -1452,8 +1452,9 @@ function App() {
         await GoogleAuth.signOut();
       } catch (e) { }
 
-      const errCode = err?.code || err?.statusCode || (typeof err === 'object' ? JSON.stringify(err) : err);
-      const errMsg = err?.message || err?.errorMessage || String(err);
+      const errCode = err?.code || err?.statusCode || err?.status || (err?.name ? err.name : 'N/A');
+      const errMsg = err?.message || err?.errorMessage || (typeof err === 'string' ? err : 'Unknown error');
+      const rawErr = typeof err === 'object' ? JSON.stringify(err) : String(err);
 
       const diagInfo = 
         `❌ GOOGLE LOGIN FAILED\n\n` +
@@ -1461,7 +1462,8 @@ function App() {
         `• Package: com.jupiter.fresh\n` +
         `• API Base URL: ${API_BASE_URL}\n` +
         `• Error Code: ${errCode}\n` +
-        `• Error Details: ${errMsg}\n\n` +
+        `• Error Message: ${errMsg}\n` +
+        `• Raw Error Object: ${rawErr.substring(0, 300)}\n\n` +
         `🔑 KEY & CONFIG:\n` +
         `• Client ID used: 85836218573-uavejljf6trr2ekrtemlhvcqc1bekvie.apps.googleusercontent.com\n` +
         `• Expected Keystore SHA-1: 22:B3:41:6D:39:06:99:08:39:F6:8A:73:05:E1:87:CA:62:52:D7:38`;
@@ -1477,7 +1479,8 @@ function App() {
         return;
       }
       const decoded = jwtDecode(credentialResponse.credential);
-      const response = await fetch(`${API_BASE_URL}/api/customers/${decoded.email}`);
+      const apiUrl = `${API_BASE_URL}/api/customers/${decoded.email}`;
+      const response = await fetch(apiUrl);
       if (response.ok) {
         const customer = await response.json();
         setUser({ name: decoded.name, email: decoded.email, picture: decoded.picture, phone: customer.phone });
@@ -1489,7 +1492,14 @@ function App() {
       }
     } catch (err) {
       console.error("Google Login Success Handler Error:", err);
-      alert("Error logging in with Google: " + (err.message || err));
+      const errCode = err?.code || err?.name || 'FETCH_ERROR';
+      const errMsg = err?.message || String(err);
+      alert(
+        `❌ WEB GOOGLE LOGIN FAILED\n\n` +
+        `• Error Code: ${errCode}\n` +
+        `• Error Details: ${errMsg}\n` +
+        `• Target URL: ${API_BASE_URL}`
+      );
     }
   };
 
