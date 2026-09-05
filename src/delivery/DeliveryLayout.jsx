@@ -183,22 +183,43 @@ export default function DeliveryLayout() {
       const { email, name } = user;
       const picture = user.imageUrl || '';
 
-      const res = await fetch(`${API_BASE_URL}/api/delivery/login`, {
+      const apiUrl = `${API_BASE_URL}/api/delivery/login`;
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, picture })
       });
-      const data = await res.json();
+      
+      const resText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(resText);
+      } catch (e) {
+        alert(
+          `❌ BACKEND RESPONSE PARSE ERROR\n\n` +
+          `• App Version: v1.0.11\n` +
+          `• Target URL: ${apiUrl}\n` +
+          `• HTTP Status: ${res.status} ${res.statusText}\n` +
+          `• Raw Response: ${resText.substring(0, 300)}`
+        );
+        return;
+      }
 
       if (res.ok && data.id) {
         setDeliveryUser(data);
       } else if (res.status === 403) {
-        alert(data.detail || "Access denied.");
+        alert("Access Denied (403): " + (data.detail || "Account deleted."));
       } else if (res.status === 400 && data.detail && data.detail.includes("Phone and Hub ID")) {
         setTempUser({ email, name, picture });
         setIsRegistering(true);
       } else {
-        alert("Login failed: " + (data.detail || "Unknown error"));
+        alert(
+          `❌ LOGIN FAILED\n\n` +
+          `• App Version: v1.0.11\n` +
+          `• HTTP Status: ${res.status}\n` +
+          `• Error Detail: ${data.detail || JSON.stringify(data)}\n` +
+          `• Target URL: ${apiUrl}`
+        );
       }
     } catch (err) {
       console.error('Native Google login error:', err);
@@ -207,7 +228,22 @@ export default function DeliveryLayout() {
           await GoogleAuth.signOut();
         }
       } catch (e) { }
-      alert("Google Login Failed on App: " + (err.message || JSON.stringify(err)));
+
+      const errCode = err?.code || err?.statusCode || (typeof err === 'object' ? JSON.stringify(err) : err);
+      const errMsg = err?.message || err?.errorMessage || String(err);
+
+      const diagInfo = 
+        `❌ GOOGLE LOGIN FAILED\n\n` +
+        `• App Version: v1.0.11\n` +
+        `• Package: com.jupiterfresh.delivery\n` +
+        `• API Base URL: ${API_BASE_URL}\n` +
+        `• Error Code: ${errCode}\n` +
+        `• Error Details: ${errMsg}\n\n` +
+        `🔑 KEY & CONFIG:\n` +
+        `• Client ID used: 85836218573-k2irh99ooeo6nsuubm29mnhih8j9o4iq.apps.googleusercontent.com\n` +
+        `• Expected Keystore SHA-1: 22:B3:41:6D:39:06:99:08:39:F6:8A:73:05:E1:87:CA:62:52:D7:38`;
+
+      alert(diagInfo);
     }
   };
 

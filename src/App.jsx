@@ -1421,7 +1421,8 @@ function App() {
   const handleNativeGoogleLogin = async () => {
     try {
       const user = await GoogleAuth.signIn();
-      const response = await fetch(`${API_BASE_URL}/api/customers/${user.email}`);
+      const apiUrl = `${API_BASE_URL}/api/customers/${user.email}`;
+      const response = await fetch(apiUrl);
       if (response.ok) {
         const customer = await response.json();
         setUser({ name: user.name, email: user.email, picture: user.imageUrl, phone: customer.phone });
@@ -1438,7 +1439,22 @@ function App() {
           await GoogleAuth.signOut();
         }
       } catch (e) { }
-      alert("Google Login Failed on App: " + (err.message || JSON.stringify(err)));
+
+      const errCode = err?.code || err?.statusCode || (typeof err === 'object' ? JSON.stringify(err) : err);
+      const errMsg = err?.message || err?.errorMessage || String(err);
+
+      const diagInfo = 
+        `❌ GOOGLE LOGIN FAILED\n\n` +
+        `• App Version: v1.0.11\n` +
+        `• Package: com.jupiter.fresh\n` +
+        `• API Base URL: ${API_BASE_URL}\n` +
+        `• Error Code: ${errCode}\n` +
+        `• Error Details: ${errMsg}\n\n` +
+        `🔑 KEY & CONFIG:\n` +
+        `• Client ID used: 85836218573-uavejljf6trr2ekrtemlhvcqc1bekvie.apps.googleusercontent.com\n` +
+        `• Expected Keystore SHA-1: 22:B3:41:6D:39:06:99:08:39:F6:8A:73:05:E1:87:CA:62:52:D7:38`;
+
+      alert(diagInfo);
     }
   };
 
