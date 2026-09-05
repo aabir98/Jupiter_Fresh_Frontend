@@ -1,6 +1,6 @@
 {
   "appId": "com.jupiterfresh.delivery",
-  "appName": "Jupiter Fresh Partner",
+  "appName": "Jupiter Fresh Delivery",
   "webDir": "dist",
   "plugins": {
     "StatusBar": {
