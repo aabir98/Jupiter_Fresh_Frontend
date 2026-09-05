@@ -43,14 +43,14 @@ const OrderProgressTracker = ({ order }) => {
       setProgress(100);
       return;
     }
-    
+
     if (order.status === 'On the way' && order.picked_up_at && order.eta) {
       const etaMatch = order.eta.match(/(\d+)/);
       if (!etaMatch) return;
       const etaMins = parseInt(etaMatch[1]);
       const etaMs = etaMins * 60 * 1000;
       const startTime = new Date(order.picked_up_at).getTime();
-      
+
       const updateProgress = () => {
         const now = Date.now();
         const elapsed = now - startTime;
@@ -59,7 +59,7 @@ const OrderProgressTracker = ({ order }) => {
         if (pct > 90) pct = 90;
         setProgress(pct);
       };
-      
+
       updateProgress();
       const interval = setInterval(updateProgress, 1000);
       return () => clearInterval(interval);
@@ -69,25 +69,25 @@ const OrderProgressTracker = ({ order }) => {
   return (
     <div style={{ margin: '16px 0', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
       <p style={{ margin: '0 0 20px 0', fontSize: '13px', fontWeight: 'bold', color: '#475569', textAlign: 'center' }}>
-        {order.status === 'Arrived' || order.status === 'Delivered' 
-          ? 'Delivery Partner has arrived!' 
+        {order.status === 'Arrived' || order.status === 'Delivered'
+          ? 'Delivery Partner has arrived!'
           : 'Delivery Partner is on the way'}
       </p>
-      
+
       <div style={{ position: 'relative', height: '40px', display: 'flex', alignItems: 'center' }}>
         {/* Background Line */}
         <div style={{ position: 'absolute', left: '16px', right: '16px', height: '4px', backgroundColor: '#cbd5e1', borderRadius: '2px', zIndex: 1 }}></div>
-        
+
         {/* Active Line */}
         <div style={{ position: 'absolute', left: '16px', right: '16px', height: '4px', zIndex: 2 }}>
-           <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#ea580c', borderRadius: '2px', transition: 'width 1s linear' }}></div>
+          <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#ea580c', borderRadius: '2px', transition: 'width 1s linear' }}></div>
         </div>
-        
+
         {/* Start Hub Icon */}
         <div style={{ position: 'absolute', left: 0, zIndex: 3, backgroundColor: 'white', borderRadius: '50%', border: '2px solid #cbd5e1', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
           <Store size={18} color="#64748b" />
         </div>
-        
+
         {/* End Home Icon */}
         <div style={{ position: 'absolute', right: 0, zIndex: 3, backgroundColor: 'white', borderRadius: '50%', border: progress === 100 ? '2px solid #ea580c' : '2px solid #cbd5e1', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', transition: 'border-color 0.3s' }}>
           <Home size={18} color={progress === 100 ? '#ea580c' : '#64748b'} style={{ transition: 'color 0.3s' }} />
@@ -95,13 +95,13 @@ const OrderProgressTracker = ({ order }) => {
 
         {/* Moving Truck */}
         <div style={{ position: 'absolute', left: '16px', right: '16px', top: '50%', zIndex: 4 }}>
-          <div style={{ 
-            position: 'absolute', 
-            left: `${progress}%`, 
+          <div style={{
+            position: 'absolute',
+            left: `${progress}%`,
             top: 0,
             transform: 'translate(-50%, -50%)',
-            backgroundColor: '#ea580c', 
-            borderRadius: '50%', 
+            backgroundColor: '#ea580c',
+            borderRadius: '50%',
             boxShadow: '0 2px 4px rgba(234, 88, 12, 0.3)',
             transition: 'left 1s linear',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -590,7 +590,7 @@ function App() {
               let newShown = [...shownNotifs];
               notificationsData.forEach(notif => {
                 if (!shownNotifs.includes(notif.id)) {
-                  registration.showNotification('New Update from Taja Cart', {
+                  registration.showNotification('New Update from Jupiter Fresh', {
                     body: notif.text,
                     icon: '/logo.png',
                     data: {
@@ -803,7 +803,7 @@ function App() {
     const orderDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     const formattedPaymentMethod = selectedPaymentMethod === 'COD' ? 'Pay on Delivery' : (
       selectedPaymentMethod === 'CARD' ? 'Card' :
-      selectedPaymentMethod === 'UPI' ? 'UPI' : 'Netbanking'
+        selectedPaymentMethod === 'UPI' ? 'UPI' : 'Netbanking'
     );
 
     const newOrder = {
@@ -1039,7 +1039,7 @@ function App() {
       deliveryDetails.state ? deliveryDetails.state.trim() : ''
     ].filter(Boolean);
     const addressStr = addressParts.join(', ');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/addresses/${editingAddressId}`, {
         method: 'PUT',
@@ -1053,8 +1053,8 @@ function App() {
         })
       });
       if (response.ok) {
-        setSavedAddresses(savedAddresses.map(a => 
-          a.id === editingAddressId 
+        setSavedAddresses(savedAddresses.map(a =>
+          a.id === editingAddressId
             ? { ...a, label: saveAddressLabel.trim() || 'Home', address: addressStr, landmark: deliveryDetails.landmark || '', lat: deliveryDetails.lat, lng: deliveryDetails.lng }
             : a
         ));
@@ -2800,7 +2800,7 @@ function App() {
                         <MapPin size={18} color="var(--primary-green)" /> {editingAddressId ? "Edit Address" : "Delivery Details"}
                       </h3>
                       {savedAddresses.length > 0 && addingNewAddress && (
-                        <button 
+                        <button
                           onClick={() => {
                             setAddingNewAddress(false);
                             setEditingAddressId(null);
@@ -2818,7 +2818,7 @@ function App() {
                                 lng: first.lng
                               }));
                             }
-                          }} 
+                          }}
                           style={{ fontSize: '13px', color: 'var(--primary-green)', fontWeight: 'bold', background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                           ← Select Saved Address
@@ -3054,16 +3054,16 @@ function App() {
                     <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#1e293b', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Shield size={18} color="#16a34a" /> Choose Payment Option
                     </h3>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {/* Card Option */}
-                      <div 
-                        onClick={() => setSelectedPaymentMethod('CARD')}
+                      {/* Card Option (Disabled) */}
+                      <div
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
-                          border: selectedPaymentMethod === 'CARD' ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                          backgroundColor: selectedPaymentMethod === 'CARD' ? '#f0fdf4' : 'white',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'not-allowed',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: '#f8fafc',
+                          opacity: 0.55,
                           transition: 'all 0.2s ease'
                         }}
                       >
@@ -3072,21 +3072,23 @@ function App() {
                             <CreditCard size={20} color="#0284c7" />
                           </div>
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Pay by Card</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>Visa, Mastercard, RuPay & more (Razorpay)</div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              Pay by Card <span style={{ fontSize: '10px', backgroundColor: '#e2e8f0', color: '#64748b', padding: '2px 6px', borderRadius: '4px' }}>Unavailable</span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Visa, Mastercard, RuPay & more (Razorpay)</div>
                           </div>
                         </div>
-                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'CARD'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                        <input type="radio" name="paymentMethod" disabled checked={false} style={{ width: '18px', height: '18px', cursor: 'not-allowed' }} />
                       </div>
 
-                      {/* UPI Option */}
-                      <div 
-                        onClick={() => setSelectedPaymentMethod('UPI')}
+                      {/* UPI Option (Disabled) */}
+                      <div
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
-                          border: selectedPaymentMethod === 'UPI' ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                          backgroundColor: selectedPaymentMethod === 'UPI' ? '#f0fdf4' : 'white',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'not-allowed',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: '#f8fafc',
+                          opacity: 0.55,
                           transition: 'all 0.2s ease'
                         }}
                       >
@@ -3095,21 +3097,23 @@ function App() {
                             <Smartphone size={20} color="#d97706" />
                           </div>
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Pay by UPI</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>Google Pay, PhonePe, Paytm, BHIM</div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              Pay by UPI <span style={{ fontSize: '10px', backgroundColor: '#e2e8f0', color: '#64748b', padding: '2px 6px', borderRadius: '4px' }}>Unavailable</span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Google Pay, PhonePe, Paytm, BHIM</div>
                           </div>
                         </div>
-                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'UPI'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                        <input type="radio" name="paymentMethod" disabled checked={false} style={{ width: '18px', height: '18px', cursor: 'not-allowed' }} />
                       </div>
 
-                      {/* Netbanking Option */}
-                      <div 
-                        onClick={() => setSelectedPaymentMethod('NETBANKING')}
+                      {/* Netbanking Option (Disabled) */}
+                      <div
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
-                          border: selectedPaymentMethod === 'NETBANKING' ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                          backgroundColor: selectedPaymentMethod === 'NETBANKING' ? '#f0fdf4' : 'white',
+                          padding: '12px 14px', borderRadius: '10px', cursor: 'not-allowed',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: '#f8fafc',
+                          opacity: 0.55,
                           transition: 'all 0.2s ease'
                         }}
                       >
@@ -3118,15 +3122,17 @@ function App() {
                             <Building size={20} color="#475569" />
                           </div>
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>Netbanking</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>All major Indian banks</div>
+                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              Netbanking <span style={{ fontSize: '10px', backgroundColor: '#e2e8f0', color: '#64748b', padding: '2px 6px', borderRadius: '4px' }}>Unavailable</span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>All major Indian banks</div>
                           </div>
                         </div>
-                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'NETBANKING'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                        <input type="radio" name="paymentMethod" disabled checked={false} style={{ width: '18px', height: '18px', cursor: 'not-allowed' }} />
                       </div>
 
                       {/* Pay on Delivery (COD) Option */}
-                      <div 
+                      <div
                         onClick={() => setSelectedPaymentMethod('COD')}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -3145,7 +3151,7 @@ function App() {
                             <div style={{ fontSize: '11px', color: '#64748b' }}>Cash or UPI at your doorstep</div>
                           </div>
                         </div>
-                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'COD'} onChange={() => {}} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
+                        <input type="radio" name="paymentMethod" checked={selectedPaymentMethod === 'COD'} onChange={() => { }} style={{ accentColor: '#16a34a', width: '18px', height: '18px', cursor: 'pointer' }} />
                       </div>
                     </div>
                   </div>
@@ -3213,149 +3219,149 @@ function App() {
                     {(() => {
                       const activeOrdersList = userOrders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
                       const pastOrdersList = userOrders.filter(o => o.status === 'Delivered' || o.status === 'Cancelled');
-                      
+
                       const renderOrderCard = (order) => (
                         <div key={order.id} className="order-card" style={{ backgroundColor: 'var(--white)', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>{order.id}</span>
-                              {(order.paymentMethod || order.payment_method) && (
-                                <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', backgroundColor: (order.paymentMethod || order.payment_method) === 'Pay on Delivery' || (order.paymentMethod || order.payment_method) === 'COD' ? '#fef3c7' : '#dcfce7', color: (order.paymentMethod || order.payment_method) === 'Pay on Delivery' || (order.paymentMethod || order.payment_method) === 'COD' ? '#92400e' : '#166534', fontWeight: '700' }}>
-                                  {order.paymentMethod || order.payment_method}
-                                </span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>{order.id}</span>
+                                {(order.paymentMethod || order.payment_method) && (
+                                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', backgroundColor: (order.paymentMethod || order.payment_method) === 'Pay on Delivery' || (order.paymentMethod || order.payment_method) === 'COD' ? '#fef3c7' : '#dcfce7', color: (order.paymentMethod || order.payment_method) === 'Pay on Delivery' || (order.paymentMethod || order.payment_method) === 'COD' ? '#92400e' : '#166534', fontWeight: '700' }}>
+                                    {order.paymentMethod || order.payment_method}
+                                  </span>
+                                )}
+                              </div>
+                              <p style={{ fontSize: '12px', color: 'var(--gray-text)', margin: '4px 0 0 0' }}>{order.date}</p>
+                            </div>
+                            <span style={{
+                              backgroundColor: order.status === 'Delivered' ? '#dcfce7' : (order.status === 'Placed' ? '#f1f5f9' : '#e0f2fe'),
+                              color: order.status === 'Delivered' ? '#16a34a' : (order.status === 'Placed' ? '#475569' : '#0284c7'),
+                              padding: '4px 12px',
+                              borderRadius: '16px',
+                              fontSize: '12px',
+                              fontWeight: '700'
+                            }}>
+                              {order.status || 'Placed'}
+                            </span>
+                          </div>
+
+                          {['On the way to Hub', 'Picked Up', 'On the way', 'Arrived'].includes(order.status) && order.eta && (
+                            <div style={{ backgroundColor: '#e0f2fe', color: '#0369a1', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                              <Timer size={16} /> ETA: {order.eta}
+                            </div>
+                          )}
+                          {order.status === 'Delivered' && order.eta && (
+                            <div style={{ backgroundColor: '#f0fdf4', color: '#166534', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                              <Zap size={16} color="#eab308" /> Whoosh!! the order is delivered in {order.eta}
+                            </div>
+                          )}
+                          {order.dp_name ? (
+                            <div style={{ backgroundColor: '#f8fafc', color: '#334155', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #e2e8f0' }}>
+                              <User size={16} color="#64748b" /> Delivery Partner: {order.dp_name} ({order.dp_phone})
+                            </div>
+                          ) : (
+                            order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                              <div style={{ backgroundColor: '#fff7ed', color: '#c2410c', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #ffedd5' }}>
+                                <Timer size={16} color="#ea580c" /> Waiting for a delivery partner...
+                              </div>
+                            )
+                          )}
+
+                          {order.delivery_pin && order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                            <div style={{ backgroundColor: '#fff7ed', color: '#9a3412', padding: '12px 14px', borderRadius: '10px', marginBottom: '16px', border: '1.5px dashed #f97316', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                              <div>
+                                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#c2410c', fontWeight: 'bold' }}>Share with Delivery Partner</div>
+                                <div style={{ fontSize: '13px', fontWeight: '700', color: '#431407' }}>4-Digit Delivery PIN</div>
+                              </div>
+                              <div style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '4px', backgroundColor: 'white', padding: '4px 14px', borderRadius: '8px', border: '2px solid #ea580c', color: '#ea580c', boxShadow: '0 2px 4px rgba(234, 88, 12, 0.15)' }}>
+                                {order.delivery_pin}
+                              </div>
+                            </div>
+                          )}
+
+                          {['On the way', 'Arrived', 'Delivered'].includes(order.status) && (
+                            <OrderProgressTracker order={order} />
+                          )}
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                            {order.items.map((item, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--primary)' }}>
+                                <span>{item.qty}x {item.name} {item.selectedSize && `(${item.selectedSize.toUpperCase()})`}</span>
+                                <span style={{ fontWeight: '600' }}>₹{item.currentPrice * item.qty}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--gray-text)' }}>
+                              <span>Delivery Charge</span>
+                              <span style={{ fontWeight: '600', color: 'var(--primary)' }}>₹{order.deliveryDetails?.deliveryFee || 0}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '13px', color: 'var(--gray-text)' }}>{order.items.reduce((sum, item) => sum + item.qty, 0)} Items</span>
+                              <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)' }}>Total: ₹{order.grandTotal}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {order.status === 'Delivered' && (
+                                <button
+                                  onClick={() => downloadInvoice(order)}
+                                  style={{ flex: 1, backgroundColor: 'var(--white)', border: '1px solid var(--primary-green)', color: 'var(--primary-green)', padding: '10px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', textAlign: 'center' }}
+                                >
+                                  Download Invoice
+                                </button>
+                              )}
+                              {(!order.status || order.status === 'Placed') && (
+                                <button
+                                  onClick={() => cancelOrder(order.id)}
+                                  style={{ flex: 1, backgroundColor: '#fee2e2', border: '1px solid #ef4444', color: '#b91c1c', padding: '10px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', textAlign: 'center' }}
+                                >
+                                  Cancel Order
+                                </button>
                               )}
                             </div>
-                            <p style={{ fontSize: '12px', color: 'var(--gray-text)', margin: '4px 0 0 0' }}>{order.date}</p>
-                          </div>
-                          <span style={{
-                            backgroundColor: order.status === 'Delivered' ? '#dcfce7' : (order.status === 'Placed' ? '#f1f5f9' : '#e0f2fe'),
-                            color: order.status === 'Delivered' ? '#16a34a' : (order.status === 'Placed' ? '#475569' : '#0284c7'),
-                            padding: '4px 12px',
-                            borderRadius: '16px',
-                            fontSize: '12px',
-                            fontWeight: '700'
-                          }}>
-                            {order.status || 'Placed'}
-                          </span>
-                        </div>
-
-                        {['On the way to Hub', 'Picked Up', 'On the way', 'Arrived'].includes(order.status) && order.eta && (
-                          <div style={{ backgroundColor: '#e0f2fe', color: '#0369a1', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
-                            <Timer size={16} /> ETA: {order.eta}
-                          </div>
-                        )}
-                        {order.status === 'Delivered' && order.eta && (
-                          <div style={{ backgroundColor: '#f0fdf4', color: '#166534', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
-                            <Zap size={16} color="#eab308" /> Whoosh!! the order is delivered in {order.eta}
-                          </div>
-                        )}
-                        {order.dp_name ? (
-                          <div style={{ backgroundColor: '#f8fafc', color: '#334155', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #e2e8f0' }}>
-                            <User size={16} color="#64748b" /> Delivery Partner: {order.dp_name} ({order.dp_phone})
-                          </div>
-                        ) : (
-                          order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                            <div style={{ backgroundColor: '#fff7ed', color: '#c2410c', padding: '10px 12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', border: '1px solid #ffedd5' }}>
-                              <Timer size={16} color="#ea580c" /> Waiting for a delivery partner...
+                            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                              <a
+                                href={`https://wa.me/+917908007745?text=${encodeURIComponent(`Hi, my name is ${user?.name || 'Customer'}. My Order id is ${order.id} containing ${order.items.map(item => `${item.name}${item.selectedSize ? ` (${item.selectedSize.toUpperCase()})` : ''} x ${item.qty}`).join(', ')}.`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ fontSize: '13px', color: 'var(--primary-green)', textDecoration: 'underline', fontWeight: '600' }}
+                              >
+                                Need help with this order?
+                              </a>
                             </div>
-                          )
-                        )}
-
-                        {order.delivery_pin && order.status !== 'Delivered' && order.status !== 'Cancelled' && (
-                          <div style={{ backgroundColor: '#fff7ed', color: '#9a3412', padding: '12px 14px', borderRadius: '10px', marginBottom: '16px', border: '1.5px dashed #f97316', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                            <div>
-                              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#c2410c', fontWeight: 'bold' }}>Share with Delivery Partner</div>
-                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#431407' }}>4-Digit Delivery PIN</div>
-                            </div>
-                            <div style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '4px', backgroundColor: 'white', padding: '4px 14px', borderRadius: '8px', border: '2px solid #ea580c', color: '#ea580c', boxShadow: '0 2px 4px rgba(234, 88, 12, 0.15)' }}>
-                              {order.delivery_pin}
-                            </div>
-                          </div>
-                        )}
-
-                        {['On the way', 'Arrived', 'Delivered'].includes(order.status) && (
-                          <OrderProgressTracker order={order} />
-                        )}
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                          {order.items.map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--primary)' }}>
-                              <span>{item.qty}x {item.name} {item.selectedSize && `(${item.selectedSize.toUpperCase()})`}</span>
-                              <span style={{ fontWeight: '600' }}>₹{item.currentPrice * item.qty}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--gray-text)' }}>
-                            <span>Delivery Charge</span>
-                            <span style={{ fontWeight: '600', color: 'var(--primary)' }}>₹{order.deliveryDetails?.deliveryFee || 0}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '13px', color: 'var(--gray-text)' }}>{order.items.reduce((sum, item) => sum + item.qty, 0)} Items</span>
-                            <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)' }}>Total: ₹{order.grandTotal}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
                             {order.status === 'Delivered' && (
-                              <button
-                                onClick={() => downloadInvoice(order)}
-                                style={{ flex: 1, backgroundColor: 'var(--white)', border: '1px solid var(--primary-green)', color: 'var(--primary-green)', padding: '10px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', textAlign: 'center' }}
-                              >
-                                Download Invoice
-                              </button>
-                            )}
-                            {(!order.status || order.status === 'Placed') && (
-                              <button
-                                onClick={() => cancelOrder(order.id)}
-                                style={{ flex: 1, backgroundColor: '#fee2e2', border: '1px solid #ef4444', color: '#b91c1c', padding: '10px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', textAlign: 'center' }}
-                              >
-                                Cancel Order
-                              </button>
+                              <>
+                                <OrderRatingWidget order={order} onReviewSubmitted={handleReviewSubmitted} />
+                                <DeliveryRatingWidget order={order} onReviewSubmitted={handleDeliveryReviewSubmitted} />
+                              </>
                             )}
                           </div>
-                          <div style={{ textAlign: 'center', marginTop: '8px' }}>
-                            <a
-                              href={`https://wa.me/+917908007745?text=${encodeURIComponent(`Hi, my name is ${user?.name || 'Customer'}. My Order id is ${order.id} containing ${order.items.map(item => `${item.name}${item.selectedSize ? ` (${item.selectedSize.toUpperCase()})` : ''} x ${item.qty}`).join(', ')}.`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ fontSize: '13px', color: 'var(--primary-green)', textDecoration: 'underline', fontWeight: '600' }}
-                            >
-                              Need help with this order?
-                            </a>
-                          </div>
-                          {order.status === 'Delivered' && (
-                            <>
-                              <OrderRatingWidget order={order} onReviewSubmitted={handleReviewSubmitted} />
-                              <DeliveryRatingWidget order={order} onReviewSubmitted={handleDeliveryReviewSubmitted} />
-                            </>
-                          )}
                         </div>
-                      </div>
-                    );
+                      );
 
-                    return (
-                      <>
-                        {activeOrdersList.length > 0 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '20px', fontWeight: '800' }}>Active Orders</h3>
-                            {activeOrdersList.map(renderOrderCard)}
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--white)', padding: '16px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                            <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '18px', fontWeight: '800' }}>Active Orders</h3>
-                            <p style={{ color: 'var(--gray-text)', fontSize: '14px', margin: '0' }}>No active orders at the moment.</p>
-                          </div>
-                        )}
-                        {pastOrdersList.length > 0 && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: activeOrdersList.length > 0 ? '24px' : '0' }}>
-                            <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '20px', fontWeight: '800' }}>Past Orders</h3>
-                            {pastOrdersList.map(renderOrderCard)}
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
+                      return (
+                        <>
+                          {activeOrdersList.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                              <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '20px', fontWeight: '800' }}>Active Orders</h3>
+                              {activeOrdersList.map(renderOrderCard)}
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--white)', padding: '16px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                              <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '18px', fontWeight: '800' }}>Active Orders</h3>
+                              <p style={{ color: 'var(--gray-text)', fontSize: '14px', margin: '0' }}>No active orders at the moment.</p>
+                            </div>
+                          )}
+                          {pastOrdersList.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: activeOrdersList.length > 0 ? '24px' : '0' }}>
+                              <h3 style={{ margin: '0', color: 'var(--primary)', fontSize: '20px', fontWeight: '800' }}>Past Orders</h3>
+                              {pastOrdersList.map(renderOrderCard)}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -3675,7 +3681,7 @@ function App() {
             <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#475569', lineHeight: '1.5' }}>
               Your order <strong>#{unratedOrder.id}</strong> has been delivered. Please take a moment to rate it!
             </p>
-            
+
             <OrderRatingWidget order={unratedOrder} onReviewSubmitted={(id, rating, review) => {
               setPlacedOrders(prev => prev.map(o => o.id === id ? { ...o, rating, review } : o));
             }} />
