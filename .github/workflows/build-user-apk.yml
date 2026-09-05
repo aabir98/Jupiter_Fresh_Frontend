@@ -22,7 +22,9 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Inject User App Environment Variable
-        run: echo "VITE_APP_TARGET=user" > .env
+        run: |
+          echo "VITE_APP_TARGET=user" > .env
+          echo "VITE_API_URL=https://jupiterfresh.co.in" >> .env
 
       - name: Build Web App
         run: npm run build
