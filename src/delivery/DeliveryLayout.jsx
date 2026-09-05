@@ -169,9 +169,10 @@ export default function DeliveryLayout() {
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
         clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+        androidClientId: '85836218573-k2irh99ooeo6nsuubm29mnhih8j9o4iq.apps.googleusercontent.com',
         serverClientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
-        grantOfflineAccess: false
+        grantOfflineAccess: true
       });
     }
   }, []);

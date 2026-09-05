@@ -527,9 +527,10 @@ function App() {
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
         clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+        androidClientId: '85836218573-uavejljf6trr2ekrtemlhvcqc1bekvie.apps.googleusercontent.com',
         serverClientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
-        grantOfflineAccess: false
+        grantOfflineAccess: true,
       });
 
       try {
