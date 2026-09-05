@@ -4,6 +4,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import DeliveryDashboard from './DeliveryDashboard';
@@ -164,6 +165,50 @@ export default function DeliveryLayout() {
     }
   }, [deliveryUser]);
 
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: false
+      });
+    }
+  }, []);
+
+  const handleNativeGoogleLogin = async () => {
+    try {
+      const user = await GoogleAuth.signIn();
+      const { email, name } = user;
+      const picture = user.imageUrl || '';
+
+      const res = await fetch(`${API_BASE_URL}/api/delivery/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, picture })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.id) {
+        setDeliveryUser(data);
+      } else if (res.status === 403) {
+        alert(data.detail || "Access denied.");
+      } else if (res.status === 400 && data.detail && data.detail.includes("Phone and Hub ID")) {
+        setTempUser({ email, name, picture });
+        setIsRegistering(true);
+      } else {
+        alert("Login failed: " + (data.detail || "Unknown error"));
+      }
+    } catch (err) {
+      console.error('Native Google login error:', err);
+      try {
+        if (Capacitor.isNativePlatform()) {
+          await GoogleAuth.signOut();
+        }
+      } catch (e) { }
+      alert("Google Login Failed on App: " + (err.message || JSON.stringify(err)));
+    }
+  };
+
   const handleGoogleSuccess = async (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     const { email, name, picture } = decoded;
@@ -266,12 +311,37 @@ export default function DeliveryLayout() {
             <p style={{ color: '#64748b', marginBottom: '32px', fontSize: '14px' }}>Login to manage your deliveries</p>
 
             {!isRegistering ? (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => alert('Login Failed')}
-                  useOneTap
-                />
+              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                {Capacitor.isNativePlatform() ? (
+                  <button
+                    onClick={handleNativeGoogleLogin}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      width: '100%',
+                      padding: '12px 24px',
+                      backgroundColor: '#ffffff',
+                      color: '#3c4043',
+                      border: '1px solid #dadce0',
+                      borderRadius: '24px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+                    }}
+                  >
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" style={{ width: '20px', height: '20px' }} />
+                    Sign in with Google
+                  </button>
+                ) : (
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => alert('Login Failed')}
+                    useOneTap
+                  />
+                )}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
