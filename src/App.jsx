@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { jwtDecode } from "jwt-decode";
 import AddressMap from './components/AddressMap';
 import { generateInvoice } from './utils/generateInvoice';
