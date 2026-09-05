@@ -82,7 +82,7 @@ body {
 .header-bg {
   background: linear-gradient(135deg, #fff5eb 0%, #ffe4cc 100%);
   padding: 16px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-top: calc(36px + env(safe-area-inset-top, 0px));
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
   border-bottom: 2px solid #ff8a00;
@@ -504,7 +504,7 @@ body {
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border-color);
   z-index: 1000;
 }

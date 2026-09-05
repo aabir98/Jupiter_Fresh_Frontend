@@ -459,7 +459,25 @@ export default function DeliveryLayout() {
       <div style={{ width: '100%', maxWidth: '480px', minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 0 20px rgba(0,0,0,0.1)' }}>
 
         {/* Global Header */}
-        <header style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', backgroundColor: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 10 }}>
+        <header style={{
+          position: 'fixed',
+          top: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: '480px',
+          boxSizing: 'border-box',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: isNativeApp ? 'calc(36px + env(safe-area-inset-top, 0px))' : '16px',
+          paddingBottom: '14px',
+          paddingLeft: '24px',
+          paddingRight: '24px',
+          backgroundColor: 'white',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          zIndex: 10
+        }}>
           <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>Jupiter Fresh Partner</h1>
           <div style={{ position: 'relative', cursor: 'pointer' }} onClick={handleBellClick}>
             <Bell size={24} color="#64748b" />
@@ -480,7 +498,7 @@ export default function DeliveryLayout() {
                 style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 15 }} 
                 onClick={handleBellClick} 
               />
-              <div style={{ position: 'absolute', top: '70px', right: '24px', width: '320px', maxWidth: 'calc(100vw - 48px)', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 20, maxHeight: '400px', overflowY: 'auto' }}>
+              <div style={{ position: 'absolute', top: isNativeApp ? 'calc(85px + env(safe-area-inset-top, 0px))' : '70px', right: '24px', width: '320px', maxWidth: 'calc(100vw - 48px)', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 20, maxHeight: '400px', overflowY: 'auto' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ margin: 0, fontSize: '14px', color: '#1e293b' }}>Notifications</h3>
                 </div>
@@ -509,7 +527,14 @@ export default function DeliveryLayout() {
         </header>
 
         {/* Main Content Area */}
-        <main style={{ flex: 1, padding: '80px 16px', overflowY: 'auto' }}>
+        <main style={{
+          flex: 1,
+          paddingTop: isNativeApp ? 'calc(105px + env(safe-area-inset-top, 0px))' : '80px',
+          paddingBottom: isNativeApp ? 'calc(95px + env(safe-area-inset-bottom, 0px))' : '70px',
+          paddingLeft: '16px',
+          paddingRight: '16px',
+          overflowY: 'auto'
+        }}>
           <Routes>
             <Route path="/active" element={<DeliveryDashboard user={deliveryUser} orders={orders} loading={loadingOrders} onRefresh={fetchOrders} />} />
             <Route path="/history" element={<DeliveryHistory user={deliveryUser} orders={orders} loading={loadingOrders} />} />
@@ -520,7 +545,23 @@ export default function DeliveryLayout() {
         </main>
 
         {/* Bottom Navigation */}
-        <nav style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '480px', backgroundColor: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '12px 0', boxShadow: '0 -2px 10px rgba(0,0,0,0.05)', borderTop: '1px solid #e2e8f0', zIndex: 10 }}>
+        <nav style={{
+          position: 'fixed',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: '480px',
+          backgroundColor: 'white',
+          display: 'flex',
+          justify: 'space-around',
+          alignItems: 'center',
+          paddingTop: '10px',
+          paddingBottom: isNativeApp ? 'calc(26px + env(safe-area-inset-bottom, 0px))' : '12px',
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
+          borderTop: '1px solid #e2e8f0',
+          zIndex: 10
+        }}>
           <div onClick={() => navigate('/delivery/active')} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'active' || activeTab === 'delivery' ? 'var(--primary-green)' : '#94a3b8' }}>
             <Home size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Active</span>
