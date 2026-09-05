@@ -392,6 +392,7 @@ function App() {
   const [appliedCoupon, setAppliedCoupon] = useLocalStorage('appliedCoupon', null);
   const [couponError, setCouponError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [fssaiPage, setFssaiPage] = useState(1);
 
   // Delivery Details State
   const [deliveryDetails, setDeliveryDetails] = useLocalStorage('deliveryDetails', {
@@ -3493,8 +3494,8 @@ function App() {
           )}
 
           {activeTab === 'about' && (
-            <div style={{ padding: '24px 16px', backgroundColor: 'var(--white)', minHeight: '100vh', paddingTop: '80px' }}>
-              <h2 style={{ color: 'var(--primary)', marginBottom: '16px' }}>About Us</h2>
+            <div style={{ padding: '24px 16px', backgroundColor: 'var(--white)', minHeight: '100vh', paddingTop: '80px', maxWidth: '640px', margin: '0 auto' }}>
+              <h2 style={{ color: 'var(--primary)', marginBottom: '16px', fontWeight: '700' }}>About Us</h2>
               <p style={{ lineHeight: '1.6', color: '#475569', marginBottom: '16px' }}>
                 Welcome to <strong>Jupiter Fresh</strong>, a brand proudly brought to you by <strong>LAMIA ENTERPRISES PRIVATE LIMITED</strong>.
               </p>
@@ -3504,6 +3505,178 @@ function App() {
               <p style={{ lineHeight: '1.6', color: '#475569', marginBottom: '24px' }}>
                 Thank you for choosing Jupiter Fresh for your daily needs.
               </p>
+
+              {/* FSSAI Subsection */}
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                marginBottom: '24px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  padding: '16px 20px',
+                  backgroundColor: '#f0fdf4',
+                  borderBottom: '1px solid #bbf7d0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '10px'
+                }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '18px' }}>🛡️</span>
+                      <h3 style={{ margin: 0, color: '#15803d', fontSize: '16px', fontWeight: '700' }}>FSSAI Registration & License</h3>
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>
+                      Reg. No: <strong>22826236000177</strong> (FSS Act, 2006)
+                    </div>
+                  </div>
+                  <a
+                    href="/fssai_certificate.pdf"
+                    download="FSSAI_Certificate_LAMIA_ENTERPRISE.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: '#16a34a',
+                      color: '#ffffff',
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      boxShadow: '0 2px 4px rgba(22, 163, 74, 0.2)'
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Certificate (PDF)
+                  </a>
+                </div>
+
+                <div style={{ padding: '16px' }}>
+                  {/* Page Controls & Navigation */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '12px',
+                    backgroundColor: '#f8fafc',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #f1f5f9'
+                  }}>
+                    <button
+                      onClick={() => setFssaiPage(p => Math.max(1, p - 1))}
+                      disabled={fssaiPage === 1}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        backgroundColor: fssaiPage === 1 ? '#f1f5f9' : '#ffffff',
+                        color: fssaiPage === 1 ? '#94a3b8' : '#334155',
+                        cursor: fssaiPage === 1 ? 'not-allowed' : 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      ← Prev
+                    </button>
+                    <span style={{ fontSize: '13px', color: '#475569', fontWeight: '600' }}>
+                      Page {fssaiPage} of 6
+                    </span>
+                    <button
+                      onClick={() => setFssaiPage(p => Math.min(6, p + 1))}
+                      disabled={fssaiPage === 6}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        backgroundColor: fssaiPage === 6 ? '#f1f5f9' : '#ffffff',
+                        color: fssaiPage === 6 ? '#94a3b8' : '#334155',
+                        cursor: fssaiPage === 6 ? 'not-allowed' : 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Next →
+                    </button>
+                  </div>
+
+                  {/* Thumbnail Selector */}
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px' }}>
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <button
+                        key={num}
+                        onClick={() => setFssaiPage(num)}
+                        style={{
+                          flexShrink: 0,
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          border: fssaiPage === num ? '2px solid #16a34a' : '1px solid #e2e8f0',
+                          backgroundColor: fssaiPage === num ? '#f0fdf4' : '#ffffff',
+                          color: fssaiPage === num ? '#166534' : '#64748b',
+                          fontWeight: fssaiPage === num ? '700' : '500',
+                          fontSize: '11px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        P.{num}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Main PDF Document Viewer (Scrollable + Zoomable view) */}
+                  <div style={{
+                    position: 'relative',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: '1px solid #cbd5e1',
+                    maxHeight: '520px',
+                    overflowY: 'auto',
+                    backgroundColor: '#f1f5f9',
+                    textAlign: 'center'
+                  }}>
+                    <img
+                      src={`/fssai_pages/page_${fssaiPage}.jpg`}
+                      alt={`FSSAI Certificate Page ${fssaiPage}`}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                        maxWidth: '100%',
+                        margin: '0 auto'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '10px',
+                    fontSize: '11px',
+                    color: '#64748b'
+                  }}>
+                    <span>💡 Scroll or click Next/Prev to view all 6 pages</span>
+                    <a
+                      href="/fssai_certificate.pdf"
+                      download="FSSAI_Certificate_LAMIA_ENTERPRISE.pdf"
+                      style={{ color: '#16a34a', textDecoration: 'underline', fontWeight: '600' }}
+                    >
+                      Download Full PDF
+                    </a>
+                  </div>
+                </div>
+              </div>
 
               <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                 <h4 style={{ color: '#334155', marginBottom: '12px', fontSize: '16px' }}>Contact Information</h4>
