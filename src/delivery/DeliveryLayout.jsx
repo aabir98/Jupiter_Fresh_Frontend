@@ -177,8 +177,22 @@ export default function DeliveryLayout() {
     }
   }, []);
 
+  const isNativeApp = Capacitor.isNativePlatform() || (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:';
+
   const handleNativeGoogleLogin = async () => {
     try {
+      try {
+        await GoogleAuth.initialize({
+          clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+          androidClientId: '85836218573-k2irh99ooeo6nsuubm29mnhih8j9o4iq.apps.googleusercontent.com',
+          serverClientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true
+        });
+      } catch (initErr) {
+        console.warn('GoogleAuth initialize warning:', initErr);
+      }
+
       const user = await GoogleAuth.signIn();
       const { email, name } = user;
       const picture = user.imageUrl || '';
@@ -224,9 +238,7 @@ export default function DeliveryLayout() {
     } catch (err) {
       console.error('Native Google login error:', err);
       try {
-        if (Capacitor.isNativePlatform()) {
-          await GoogleAuth.signOut();
-        }
+        await GoogleAuth.signOut();
       } catch (e) { }
 
       const errCode = err?.code || err?.statusCode || (typeof err === 'object' ? JSON.stringify(err) : err);
@@ -350,7 +362,7 @@ export default function DeliveryLayout() {
 
             {!isRegistering ? (
               <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                {Capacitor.isNativePlatform() ? (
+                {isNativeApp ? (
                   <button
                     onClick={handleNativeGoogleLogin}
                     style={{
@@ -376,7 +388,7 @@ export default function DeliveryLayout() {
                 ) : (
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
-                    onError={() => alert('Login Failed')}
+                    onError={(err) => alert('Web Login Failed: ' + JSON.stringify(err))}
                     useOneTap
                   />
                 )}

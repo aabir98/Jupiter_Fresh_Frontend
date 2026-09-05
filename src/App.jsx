@@ -1418,8 +1418,22 @@ function App() {
     }
   }, [categoryTabVisibleSubSubcategories]);
 
+  const isNativeApp = Capacitor.isNativePlatform() || (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:';
+
   const handleNativeGoogleLogin = async () => {
     try {
+      try {
+        await GoogleAuth.initialize({
+          clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+          androidClientId: '85836218573-uavejljf6trr2ekrtemlhvcqc1bekvie.apps.googleusercontent.com',
+          serverClientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true,
+        });
+      } catch (initErr) {
+        console.warn('GoogleAuth initialize warning:', initErr);
+      }
+
       const user = await GoogleAuth.signIn();
       const apiUrl = `${API_BASE_URL}/api/customers/${user.email}`;
       const response = await fetch(apiUrl);
@@ -1435,9 +1449,7 @@ function App() {
     } catch (err) {
       console.error('Google login error:', err);
       try {
-        if (Capacitor.isNativePlatform()) {
-          await GoogleAuth.signOut();
-        }
+        await GoogleAuth.signOut();
       } catch (e) { }
 
       const errCode = err?.code || err?.statusCode || (typeof err === 'object' ? JSON.stringify(err) : err);
@@ -3916,7 +3928,7 @@ function App() {
             <div className="auth-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0' }}>
               {!isCollectingPhone ? (
                 <>
-                  {Capacitor.isNativePlatform() ? (
+                  {isNativeApp ? (
                     <button
                       onClick={handleNativeGoogleLogin}
                       style={{
