@@ -55,6 +55,11 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/admin/*" element={<AdminLayout />} />
                 <Route path="/*" element={<Navigate to="/admin" replace />} />
               </>
+            ) : import.meta.env.VITE_APP_TARGET === 'delivery' ? (
+              <>
+                <Route path="/delivery/*" element={<DeliveryLayout />} />
+                <Route path="/*" element={<Navigate to="/delivery" replace />} />
+              </>
             ) : (
               <>
                 <Route path="/delivery/*" element={<DeliveryLayout />} />

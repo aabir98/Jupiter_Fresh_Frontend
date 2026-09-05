@@ -5,6 +5,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import DeliveryDashboard from './DeliveryDashboard';
 import DeliveryHistory from './DeliveryHistory';
 import DeliveryAccount from './DeliveryAccount';
@@ -83,7 +84,19 @@ export default function DeliveryLayout() {
         if (prevOrderIds.current.size > 0) {
           const newOrders = activeOrders.filter(o => !prevOrderIds.current.has(o.id));
           if (newOrders.length > 0) {
-            if ('Notification' in window && Notification.permission === 'granted') {
+            if (Capacitor.isNativePlatform()) {
+              LocalNotifications.schedule({
+                notifications: [
+                  {
+                    title: 'New Delivery Assigned! 📦',
+                    body: `You have been assigned ${newOrders.length} new order(s). Open app to view details.`,
+                    id: Math.floor(Math.random() * 100000),
+                    schedule: { at: new Date(Date.now() + 100) },
+                    sound: 'default'
+                  }
+                ]
+              }).catch(e => console.error("Failed to schedule local notification", e));
+            } else if ('Notification' in window && Notification.permission === 'granted') {
               new Notification('New Delivery Assigned! 📦', {
                 body: `You have been assigned ${newOrders.length} new order(s). Open the app to view details.`,
                 icon: '/vite.svg'
@@ -115,6 +128,7 @@ export default function DeliveryLayout() {
 
   useEffect(() => {
     if (deliveryUser && Capacitor.isNativePlatform()) {
+      LocalNotifications.requestPermissions();
       PushNotifications.requestPermissions().then(result => {
         if (result.receive === 'granted') {
           PushNotifications.register();
@@ -129,8 +143,23 @@ export default function DeliveryLayout() {
         }).catch(e => console.error('Failed to save delivery token', e));
       });
 
+      const pushReceivedListener = PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        LocalNotifications.schedule({
+          notifications: [
+            {
+              title: notification.title || 'New Delivery Notification 📦',
+              body: notification.body || notification.text || 'You have a new delivery update.',
+              id: Math.floor(Math.random() * 100000),
+              schedule: { at: new Date(Date.now() + 100) },
+              sound: 'default'
+            }
+          ]
+        }).catch(e => console.error('Error scheduling push local notification', e));
+      });
+
       return () => {
         listener.then(l => l.remove());
+        pushReceivedListener.then(l => l.remove());
       };
     }
   }, [deliveryUser]);

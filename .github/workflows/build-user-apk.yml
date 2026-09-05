@@ -1,4 +1,4 @@
-name: Build Android App Bundle (Release)
+name: Build User App APK (Release)
 
 on:
   push:
@@ -21,6 +21,9 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Inject User App Environment Variable
+        run: echo "VITE_APP_TARGET=user" > .env
+
       - name: Build Web App
         run: npm run build
 
@@ -29,9 +32,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-
-      - name: Print Keystore SHA-1 Fingerprint
-        run: keytool -list -v -keystore android/app/taja-release.keystore -alias taja -storepass tajacart2026 | grep SHA1
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -43,14 +43,14 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleRelease bundleRelease -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/app/taja-release.keystore -Pandroid.injected.signing.store.password=tajacart2026 -Pandroid.injected.signing.key.alias=taja -Pandroid.injected.signing.key.password=tajacart2026
 
-      - name: Upload APK Artifact
+      - name: Upload User App APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TajaCart-Release-APK
+          name: JupiterFresh-UserApp-Release-APK
           path: android/app/build/outputs/apk/release/app-release.apk
 
-      - name: Upload AAB Artifact
+      - name: Upload User App AAB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TajaCart-Release-AAB
+          name: JupiterFresh-UserApp-Release-AAB
           path: android/app/build/outputs/bundle/release/app-release.aab

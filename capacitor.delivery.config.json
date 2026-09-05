@@ -1,6 +1,6 @@
 {
-  "appId": "com.taja.cart",
-  "appName": "Jupiter Fresh",
+  "appId": "com.jupiterfresh.delivery",
+  "appName": "Jupiter Fresh Partner",
   "webDir": "dist",
   "plugins": {
     "StatusBar": {

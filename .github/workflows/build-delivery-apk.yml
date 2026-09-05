@@ -1,0 +1,68 @@
+name: Build Delivery Partner App APK (Release)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Inject Delivery Environment Variable
+        run: echo "VITE_APP_TARGET=delivery" > .env
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Swap to Delivery Capacitor Config
+        run: cp capacitor.delivery.config.json capacitor.config.json
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Update Android App Name and ID
+        run: |
+          sed -i 's/applicationId "com.taja.cart"/applicationId "com.jupiterfresh.delivery"/g' android/app/build.gradle
+          sed -i 's/<string name="app_name">Taja Cart<\/string>/<string name="app_name">Jupiter Fresh Partner<\/string>/g' android/app/src/main/res/values/strings.xml
+          sed -i 's/<string name="title_activity_main">Taja Cart<\/string>/<string name="title_activity_main">Jupiter Fresh Partner<\/string>/g' android/app/src/main/res/values/strings.xml
+
+      - name: Bypass Firebase google-services error
+        run: sed -i 's/com.taja.cart/com.jupiterfresh.delivery/g' android/app/google-services.json
+
+      - name: Build Release APK and AAB
+        working-directory: ./android
+        run: |
+          sed -i 's/\r$//' gradlew
+          chmod +x ./gradlew
+          ./gradlew assembleRelease bundleRelease -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/app/taja-release.keystore -Pandroid.injected.signing.store.password=tajacart2026 -Pandroid.injected.signing.key.alias=taja -Pandroid.injected.signing.key.password=tajacart2026
+
+      - name: Upload Delivery Partner APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JupiterFresh-DeliveryPartner-Release-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload Delivery Partner AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JupiterFresh-DeliveryPartner-Release-AAB
+          path: android/app/build/outputs/bundle/release/app-release.aab
