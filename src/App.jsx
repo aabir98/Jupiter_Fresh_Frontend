@@ -3518,48 +3518,15 @@ function App() {
                 <div style={{
                   padding: '16px 20px',
                   backgroundColor: '#f0fdf4',
-                  borderBottom: '1px solid #bbf7d0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '10px'
+                  borderBottom: '1px solid #bbf7d0'
                 }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '18px' }}>🛡️</span>
-                      <h3 style={{ margin: 0, color: '#15803d', fontSize: '16px', fontWeight: '700' }}>FSSAI Registration & License</h3>
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>
-                      Reg. No: <strong>22826236000177</strong> (FSS Act, 2006)
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '18px' }}>🛡️</span>
+                    <h3 style={{ margin: 0, color: '#15803d', fontSize: '16px', fontWeight: '700' }}>FSSAI Registration & License</h3>
                   </div>
-                  <a
-                    href="/fssai_certificate.pdf"
-                    download="FSSAI_Certificate_LAMIA_ENTERPRISE.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      backgroundColor: '#16a34a',
-                      color: '#ffffff',
-                      padding: '8px 14px',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      boxShadow: '0 2px 4px rgba(22, 163, 74, 0.2)'
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Download Certificate (PDF)
-                  </a>
+                  <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>
+                    Reg. No: <strong>22826236000177</strong> (FSS Act, 2006)
+                  </div>
                 </div>
 
                 <div style={{ padding: '16px' }}>
@@ -3659,21 +3626,12 @@ function App() {
                   </div>
                   
                   <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    textAlign: 'center',
                     marginTop: '10px',
                     fontSize: '11px',
                     color: '#64748b'
                   }}>
                     <span>💡 Scroll or click Next/Prev to view all 6 pages</span>
-                    <a
-                      href="/fssai_certificate.pdf"
-                      download="FSSAI_Certificate_LAMIA_ENTERPRISE.pdf"
-                      style={{ color: '#16a34a', textDecoration: 'underline', fontWeight: '600' }}
-                    >
-                      Download Full PDF
-                    </a>
                   </div>
                 </div>
               </div>
