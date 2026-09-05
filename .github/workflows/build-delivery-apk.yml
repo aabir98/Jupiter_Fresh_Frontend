@@ -41,12 +41,11 @@ jobs:
 
       - name: Update Android App Name and ID
         run: |
-          sed -i 's/applicationId "com.taja.cart"/applicationId "com.jupiterfresh.delivery"/g' android/app/build.gradle
-          sed -i 's/<string name="app_name">Taja Cart<\/string>/<string name="app_name">Jupiter Fresh Partner<\/string>/g' android/app/src/main/res/values/strings.xml
-          sed -i 's/<string name="title_activity_main">Taja Cart<\/string>/<string name="title_activity_main">Jupiter Fresh Partner<\/string>/g' android/app/src/main/res/values/strings.xml
-
-      - name: Bypass Firebase google-services error
-        run: sed -i 's/com.taja.cart/com.jupiterfresh.delivery/g' android/app/google-services.json
+          sed -i 's/applicationId "com.jupiter.fresh"/applicationId "com.jupiterfresh.delivery"/g' android/app/build.gradle
+          sed -i 's/<string name="app_name">Jupiter Fresh<\/string>/<string name="app_name">Jupiter Fresh Partner<\/string>/g' android/app/src/main/res/values/strings.xml
+          sed -i 's/<string name="title_activity_main">Jupiter Fresh<\/string>/<string name="title_activity_main">Jupiter Fresh Partner<\/string>/g' android/app/src/main/res/values/strings.xml
+          sed -i 's/<string name="package_name">com.jupiter.fresh<\/string>/<string name="package_name">com.jupiterfresh.delivery<\/string>/g' android/app/src/main/res/values/strings.xml
+          sed -i 's/<string name="custom_url_scheme">com.jupiter.fresh<\/string>/<string name="custom_url_scheme">com.jupiterfresh.delivery<\/string>/g' android/app/src/main/res/values/strings.xml
 
       - name: Build Release APK and AAB
         working-directory: ./android

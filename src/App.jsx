@@ -526,6 +526,7 @@ function App() {
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
         clientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
+        serverClientId: '85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
         grantOfflineAccess: false
       });
