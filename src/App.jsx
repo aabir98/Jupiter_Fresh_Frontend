@@ -532,7 +532,12 @@ function App() {
         grantOfflineAccess: false
       });
 
-      LocalNotifications.requestPermissions();
+      try {
+        if (typeof LocalNotifications !== 'undefined' && LocalNotifications.requestPermissions) {
+          LocalNotifications.requestPermissions();
+        }
+      } catch (e) { }
+
       PushNotifications.requestPermissions().then(result => {
         if (result.receive === 'granted') {
           PushNotifications.register();
@@ -548,17 +553,21 @@ function App() {
       });
 
       PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        LocalNotifications.schedule({
-          notifications: [
-            {
-              title: notification.title || 'Jupiter Fresh Update 🛒',
-              body: notification.body || notification.text || 'You have a new update from Jupiter Fresh',
-              id: Math.floor(Math.random() * 100000),
-              schedule: { at: new Date(Date.now() + 100) },
-              sound: 'default'
-            }
-          ]
-        }).catch(e => console.error('Error scheduling local notification', e));
+        try {
+          if (typeof LocalNotifications !== 'undefined' && LocalNotifications.schedule) {
+            LocalNotifications.schedule({
+              notifications: [
+                {
+                  title: notification.title || 'Jupiter Fresh Update 🛒',
+                  body: notification.body || notification.text || 'You have a new update from Jupiter Fresh',
+                  id: Math.floor(Math.random() * 100000),
+                  schedule: { at: new Date(Date.now() + 100) },
+                  sound: 'default'
+                }
+              ]
+            }).catch(e => console.error('Error scheduling local notification', e));
+          }
+        } catch (e) { }
 
         // Trigger a background refresh when notification arrives
         const event = new Event('taja-app-refresh');
