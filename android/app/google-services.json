@@ -1,20 +1,20 @@
 {
   "project_info": {
-    "project_number": "969406446453",
-    "project_id": "tajacart-5e03a",
-    "storage_bucket": "tajacart-5e03a.firebasestorage.app"
+    "project_number": "85836218573",
+    "project_id": "jupiterfresh",
+    "storage_bucket": "jupiterfresh.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:969406446453:android:0f4323a426969439a5b13c",
+        "mobilesdk_app_id": "1:85836218573:android:0f4323a426969439a5b13c",
         "android_client_info": {
           "package_name": "com.jupiter.fresh"
         }
       },
       "oauth_client": [
         {
-          "client_id": "969406446453-1tlpqanbj8ips14bttt5ev7j6nelp77v.apps.googleusercontent.com",
+          "client_id": "85836218573-uavejljf6trr2ekrtemlhvcqc1bekvie.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.jupiter.fresh",
@@ -22,7 +22,7 @@
           }
         },
         {
-          "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+          "client_id": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -35,7 +35,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+              "client_id": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
@@ -44,14 +44,14 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:969406446453:android:0f4323a426969439a5b13d",
+        "mobilesdk_app_id": "1:85836218573:android:0f4323a426969439a5b13d",
         "android_client_info": {
           "package_name": "com.jupiterfresh.delivery"
         }
       },
       "oauth_client": [
         {
-          "client_id": "969406446453-1tlpqanbj8ips14bttt5ev7j6nelp77v.apps.googleusercontent.com",
+          "client_id": "85836218573-k2irh99ooeo6nsuubm29mnhih8j9o4iq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.jupiterfresh.delivery",
@@ -59,7 +59,7 @@
           }
         },
         {
-          "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+          "client_id": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -72,44 +72,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:969406446453:android:0f4323a426969439a5b13e",
-        "android_client_info": {
-          "package_name": "com.taja.cart"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "969406446453-1tlpqanbj8ips14bttt5ev7j6nelp77v.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.taja.cart",
-            "certificate_hash": "22b3416d3906990839f68a7305e187ca6252d738"
-          }
-        },
-        {
-          "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBKnYOlmlcve8-nXQPC5XyZWE8nCXQYFms"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "969406446453-5pn863ir0og0e9jemmcpm3p3odvl73r1.apps.googleusercontent.com",
+              "client_id": "85836218573-cmeh6gk3t4hbvsiu598jpm674tbd0b89.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
