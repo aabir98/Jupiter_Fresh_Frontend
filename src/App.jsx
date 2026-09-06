@@ -3986,8 +3986,8 @@ function App() {
       {/* Rating Modal */}
       {pendingRatingOrder && (
         <>
-          <div className="auth-overlay" onClick={() => setPendingRatingOrder(null)} />
-          <div className="auth-modal" style={{ padding: '20px', borderRadius: '12px', width: '90%', maxWidth: '400px', backgroundColor: 'white', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1001 }}>
+          <div className="auth-overlay" style={{ zIndex: 9999 }} onClick={() => setPendingRatingOrder(null)} />
+          <div className="auth-modal" style={{ padding: '20px', borderRadius: '12px', width: '90%', maxWidth: '400px', backgroundColor: 'white', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10000 }}>
             <button className="close-btn" onClick={() => setPendingRatingOrder(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={24} /></button>
             <h2 style={{ marginBottom: '8px', fontSize: '20px', color: '#0f172a' }}>Order Placed! 🎉</h2>
             <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '16px' }}>Would you like to rate your experience?</p>
@@ -4008,10 +4008,43 @@ function App() {
         </>
       )}
       {sizeModalProduct && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSizeModalProduct(null)}>
-          <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '24px', borderRadius: '24px', width: '90%', maxWidth: '380px', border: '1px solid rgba(255, 255, 255, 0.5)', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }} onClick={e => e.stopPropagation()}>
+        <div 
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+            backdropFilter: 'blur(8px)', 
+            WebkitBackdropFilter: 'blur(8px)', 
+            zIndex: 10000, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: '16px'
+          }} 
+          onClick={() => setSizeModalProduct(null)}
+        >
+          <div 
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+              backdropFilter: 'blur(20px)', 
+              WebkitBackdropFilter: 'blur(20px)', 
+              padding: '24px', 
+              borderRadius: '24px', 
+              width: '100%', 
+              maxWidth: '380px', 
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid rgba(255, 255, 255, 0.5)', 
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)' 
+            }} 
+            onClick={e => e.stopPropagation()}
+          >
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexShrink: 0 }}>
               <div>
                 <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', color: '#1e293b', fontWeight: '700', letterSpacing: '-0.5px' }}>{sizeModalProduct.name}</h3>
                 <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Select your size</span>
@@ -4019,14 +4052,14 @@ function App() {
               <button onClick={() => setSizeModalProduct(null)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '28px', lineHeight: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>&times;</button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '50vh', overflowY: 'auto', paddingRight: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', flex: 1, paddingRight: '4px', marginBottom: '16px' }}>
               {sizeModalFullSizes.map(sz => {
                 const productSizes = sizeModalProduct.sizes ? sizeModalProduct.sizes.split(',').map(s => s.trim()) : [];
                 const isAvailable = productSizes.includes(sz);
                 const cartKey = `${sizeModalProduct.name}|${sz}`;
                 const qty = cart[cartKey] || 0;
                 return (
-                  <div key={sz} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: '12px', backgroundColor: qty > 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255, 255, 255, 0.6)', border: qty > 0 ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(255, 255, 255, 0.8)', transition: 'all 0.2s ease', opacity: isAvailable ? 1 : 0.6 }}>
+                  <div key={sz} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: '12px', backgroundColor: qty > 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255, 255, 255, 0.8)', border: qty > 0 ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid #e2e8f0', transition: 'all 0.2s ease', opacity: isAvailable ? 1 : 0.6 }}>
                     <span style={{ fontSize: '15px', fontWeight: '600', color: qty > 0 ? 'var(--primary-green)' : (isAvailable ? '#475569' : '#94a3b8'), textDecoration: isAvailable ? 'none' : 'line-through' }}>{sz.trim().toUpperCase()}</span>
 
                     {isAvailable ? (
@@ -4054,7 +4087,7 @@ function App() {
 
             <button
               onClick={() => setSizeModalProduct(null)}
-              style={{ marginTop: '24px', width: '100%', padding: '14px', backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)' }}
+              style={{ flexShrink: 0, width: '100%', padding: '14px', backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', letterSpacing: '0.5px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)' }}
             >
               Done
             </button>
