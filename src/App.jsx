@@ -3756,13 +3756,16 @@ function App() {
       {/* Floating WhatsApp Button */}
       <div style={{
         position: 'fixed',
-        bottom: '100px',
+        bottom: totalCartItems > 0 && activeTab !== 'cart' 
+          ? 'calc(135px + env(safe-area-inset-bottom, 0px))' 
+          : 'calc(75px + env(safe-area-inset-bottom, 0px))',
         left: '50%',
         transform: 'translateX(-50%)',
         width: '100%',
         maxWidth: '480px',
         pointerEvents: 'none',
-        zIndex: 999,
+        zIndex: 1004,
+        transition: 'bottom 0.2s ease',
       }}>
         <a
           href="https://wa.me/+917908007745"
@@ -3798,13 +3801,13 @@ function App() {
       {totalCartItems > 0 && activeTab !== 'cart' && (
         <div style={{
           position: 'fixed',
-          bottom: '76px',
+          bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: '480px',
           pointerEvents: 'none',
-          zIndex: 999,
+          zIndex: 1005,
         }}>
           <div
             onClick={() => setActiveTab('cart')}
@@ -3822,7 +3825,7 @@ function App() {
               alignItems: 'center',
               justifyContent: 'center',
               color: 'white',
-              boxShadow: '0 4px 12px rgba(2, 113, 185, 0.3)',
+              boxShadow: '0 4px 16px rgba(2, 113, 185, 0.4)',
               cursor: 'pointer',
               pointerEvents: 'auto'
             }}
