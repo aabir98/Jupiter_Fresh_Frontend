@@ -554,45 +554,46 @@ export default function DeliveryLayout() {
           maxWidth: '480px',
           backgroundColor: 'white',
           display: 'flex',
-          justify: 'space-around',
+          justifyContent: 'space-around',
           alignItems: 'center',
           paddingTop: '10px',
           paddingBottom: isNativeApp ? 'calc(26px + env(safe-area-inset-bottom, 0px))' : '12px',
           boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
           borderTop: '1px solid #e2e8f0',
+          boxSizing: 'border-box',
           zIndex: 10
         }}>
-          <div onClick={() => navigate('/delivery/active')} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'active' || activeTab === 'delivery' ? 'var(--primary-green)' : '#94a3b8' }}>
+          <div onClick={() => navigate('/delivery/active')} style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'active' || activeTab === 'delivery' ? 'var(--primary-green)' : '#94a3b8' }}>
             <Home size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Active</span>
             {activeOrdersCount > 0 && (
               <span style={{
-                position: 'absolute', top: '-4px', right: '-8px', backgroundColor: '#ef4444', color: 'white',
-                fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '10px',
+                position: 'absolute', top: '-4px', right: 'calc(50% - 18px)', backgroundColor: '#ef4444', color: 'white',
+                fontSize: '10px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px',
                 border: '2px solid white'
               }}>
                 {activeOrdersCount}
               </span>
             )}
           </div>
-          <div onClick={() => navigate('/delivery/history')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'history' ? 'var(--primary-green)' : '#94a3b8' }}>
+          <div onClick={() => navigate('/delivery/history')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'history' ? 'var(--primary-green)' : '#94a3b8' }}>
             <History size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>History</span>
           </div>
-          <div onClick={() => navigate('/delivery/wallet')} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'wallet' ? 'var(--primary-green)' : '#94a3b8' }}>
+          <div onClick={() => navigate('/delivery/wallet')} style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'wallet' ? 'var(--primary-green)' : '#94a3b8' }}>
             <Wallet size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Wallet</span>
             {walletBadgeText && (
               <span style={{
-                position: 'absolute', top: '-4px', right: '-10px', backgroundColor: '#ef4444', color: 'white',
-                fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '10px',
+                position: 'absolute', top: '-4px', right: 'calc(50% - 22px)', backgroundColor: '#ef4444', color: 'white',
+                fontSize: '10px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px',
                 border: '2px solid white', lineHeight: '1'
               }}>
                 {walletBadgeText}
               </span>
             )}
           </div>
-          <div onClick={() => navigate('/delivery/account')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'account' ? 'var(--primary-green)' : '#94a3b8' }}>
+          <div onClick={() => navigate('/delivery/account')} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: activeTab === 'account' ? 'var(--primary-green)' : '#94a3b8' }}>
             <User size={22} />
             <span style={{ fontSize: '11px', fontWeight: '600' }}>Account</span>
           </div>
