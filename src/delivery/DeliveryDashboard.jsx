@@ -71,6 +71,25 @@ function OrderCard({ order, onUpdate }) {
   const [paymentMode, setPaymentMode] = useState('COD'); // 'COD' | 'UPI'
   const [showQrModal, setShowQrModal] = useState(false);
   
+  const expectedPin = order.delivery_pin ? String(order.delivery_pin).trim() : null;
+  const isPinEntered = pinInput.length === 4;
+  const isPinCorrect = isPinEntered && (!expectedPin || pinInput.trim() === expectedPin) && !pinError;
+  const isPinWrong = isPinEntered && ((expectedPin && pinInput.trim() !== expectedPin) || !!pinError);
+
+  const handlePinChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setPinInput(val);
+    if (val.length === 4) {
+      if (expectedPin && val.trim() !== expectedPin) {
+        setPinError("Wrong Delivery PIN! Ask Delivery PIN from customer");
+      } else {
+        setPinError("");
+      }
+    } else {
+      setPinError("");
+    }
+  };
+
   const handleSetEta = () => {
     if (!etaInput) {
       alert("Please enter an ETA.");
@@ -81,10 +100,9 @@ function OrderCard({ order, onUpdate }) {
   };
 
   const handleConfirmDelivery = async (chosenMode = paymentMode) => {
-    if (!pinInput || pinInput.length !== 4) {
-      const errMsg = "Wrong Delivery Pin. Ask Delivery Pin from customer";
-      setPinError(errMsg);
-      alert(errMsg);
+    if (expectedPin && pinInput.trim() !== expectedPin) {
+      setPinError("Wrong Delivery PIN! Ask Delivery PIN from customer");
+      alert("Wrong Delivery PIN! Ask Delivery PIN from customer");
       return;
     }
     setPinError('');
@@ -92,10 +110,18 @@ function OrderCard({ order, onUpdate }) {
     const res = await onUpdate(order.id, 'Delivered', null, pinInput, chosenMode);
     setSubmittingPin(false);
     if (res && !res.success) {
-      const errMsg = res.error || "Wrong Delivery Pin. Ask Delivery Pin from customer";
+      const errMsg = res.error || "Wrong Delivery PIN. Ask Delivery PIN from customer";
       setPinError(errMsg);
+      setShowQrModal(false);
     } else {
       setShowQrModal(false);
+    }
+  };
+
+  const handleSelectUpiMode = () => {
+    setPaymentMode('UPI');
+    if (isPinCorrect) {
+      setShowQrModal(true);
     }
   };
 
@@ -217,27 +243,40 @@ function OrderCard({ order, onUpdate }) {
                 type="text" 
                 maxLength={4}
                 value={pinInput} 
-                onChange={e => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  setPinInput(val);
-                  if (pinError) setPinError('');
-                }}
+                onChange={handlePinChange}
                 placeholder="4-digit PIN"
                 style={{ 
                   width: '100%', 
                   boxSizing: 'border-box',
                   padding: '10px 12px', 
                   borderRadius: '8px', 
-                  border: pinError ? '2px solid #ef4444' : '1px solid #cbd5e1', 
+                  border: isPinWrong ? '2px solid #ef4444' : isPinCorrect ? '2px solid #16a34a' : '1px solid #cbd5e1', 
                   fontSize: '18px', 
                   fontWeight: 'bold', 
                   letterSpacing: '4px',
                   textAlign: 'center',
                   outline: 'none',
                   backgroundColor: 'white',
-                  marginBottom: '12px'
+                  marginBottom: '8px'
                 }}
               />
+
+              {/* Status Banner */}
+              {isPinWrong && (
+                <div style={{ color: '#ef4444', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', textAlign: 'center', marginBottom: '12px' }}>
+                  ❌ Wrong Delivery PIN! Ask Delivery PIN from customer.
+                </div>
+              )}
+              {isPinCorrect && (
+                <div style={{ color: '#15803d', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', textAlign: 'center', marginBottom: '12px' }}>
+                  ✓ PIN Verified Successfully!
+                </div>
+              )}
+              {!isPinEntered && (
+                <div style={{ color: '#64748b', fontSize: '12px', textAlign: 'center', marginBottom: '12px' }}>
+                  Enter correct 4-digit PIN to activate payment buttons
+                </div>
+              )}
 
               {/* Payment Mode Selector Toggle */}
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#475569', marginBottom: '6px' }}>
@@ -246,39 +285,40 @@ function OrderCard({ order, onUpdate }) {
               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 <button
                   type="button"
+                  disabled={!isPinCorrect || submittingPin}
                   onClick={() => setPaymentMode('COD')}
                   style={{
                     flex: 1,
                     padding: '10px',
                     borderRadius: '8px',
-                    border: paymentMode === 'COD' ? '2px solid #15803d' : '1px solid #cbd5e1',
-                    backgroundColor: paymentMode === 'COD' ? '#f0fdf4' : 'white',
-                    color: paymentMode === 'COD' ? '#15803d' : '#64748b',
+                    border: isPinCorrect && paymentMode === 'COD' ? '2px solid #15803d' : '1px solid #cbd5e1',
+                    backgroundColor: !isPinCorrect ? '#f1f5f9' : paymentMode === 'COD' ? '#f0fdf4' : 'white',
+                    color: !isPinCorrect ? '#94a3b8' : paymentMode === 'COD' ? '#15803d' : '#475569',
                     fontWeight: 'bold',
                     fontSize: '13px',
-                    cursor: 'pointer'
+                    opacity: !isPinCorrect ? 0.5 : 1,
+                    cursor: !isPinCorrect ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   💵 Cash on Delivery
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setPaymentMode('UPI');
-                    if (pinInput.length === 4) {
-                      setShowQrModal(true);
-                    }
-                  }}
+                  disabled={!isPinCorrect || submittingPin}
+                  onClick={handleSelectUpiMode}
                   style={{
                     flex: 1,
                     padding: '10px',
                     borderRadius: '8px',
-                    border: paymentMode === 'UPI' ? '2px solid #0284c7' : '1px solid #cbd5e1',
-                    backgroundColor: paymentMode === 'UPI' ? '#f0f9ff' : 'white',
-                    color: paymentMode === 'UPI' ? '#0369a1' : '#64748b',
+                    border: isPinCorrect && paymentMode === 'UPI' ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                    backgroundColor: !isPinCorrect ? '#f1f5f9' : paymentMode === 'UPI' ? '#f0f9ff' : 'white',
+                    color: !isPinCorrect ? '#94a3b8' : paymentMode === 'UPI' ? '#0369a1' : '#475569',
                     fontWeight: 'bold',
                     fontSize: '13px',
-                    cursor: 'pointer'
+                    opacity: !isPinCorrect ? 0.5 : 1,
+                    cursor: !isPinCorrect ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   📱 UPI on Delivery
@@ -289,21 +329,23 @@ function OrderCard({ order, onUpdate }) {
               {paymentMode === 'COD' ? (
                 <button 
                   onClick={() => handleConfirmDelivery('COD')}
-                  disabled={submittingPin || pinInput.length !== 4}
+                  disabled={!isPinCorrect || submittingPin}
                   style={{ 
                     width: '100%',
-                    backgroundColor: pinInput.length === 4 ? '#16a34a' : '#cbd5e1', 
+                    backgroundColor: isPinCorrect ? '#16a34a' : '#cbd5e1', 
                     color: 'white', 
                     border: 'none', 
                     padding: '12px', 
                     borderRadius: '8px', 
                     fontWeight: 'bold', 
                     fontSize: '15px',
-                    cursor: pinInput.length === 4 ? 'pointer' : 'not-allowed', 
+                    opacity: isPinCorrect ? 1 : 0.6,
+                    cursor: isPinCorrect ? 'pointer' : 'not-allowed', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    boxShadow: isPinCorrect ? '0 2px 4px rgba(22,163,74,0.3)' : 'none'
                   }}
                 >
                   <CheckCircle size={18} /> {submittingPin ? 'Verifying...' : `Cash Collected (₹${order.grandTotal})`}
@@ -311,38 +353,31 @@ function OrderCard({ order, onUpdate }) {
               ) : (
                 <button 
                   onClick={() => {
-                    if (pinInput.length !== 4) {
-                      setPinError("Please enter 4-digit PIN first");
-                      alert("Please enter customer's 4-digit PIN first");
-                      return;
+                    if (isPinCorrect) {
+                      setShowQrModal(true);
                     }
-                    setShowQrModal(true);
                   }}
-                  disabled={submittingPin || pinInput.length !== 4}
+                  disabled={!isPinCorrect || submittingPin}
                   style={{ 
                     width: '100%',
-                    backgroundColor: pinInput.length === 4 ? '#0284c7' : '#cbd5e1', 
+                    backgroundColor: isPinCorrect ? '#0284c7' : '#cbd5e1', 
                     color: 'white', 
                     border: 'none', 
                     padding: '12px', 
                     borderRadius: '8px', 
                     fontWeight: 'bold', 
                     fontSize: '15px',
-                    cursor: pinInput.length === 4 ? 'pointer' : 'not-allowed', 
+                    opacity: isPinCorrect ? 1 : 0.6,
+                    cursor: isPinCorrect ? 'pointer' : 'not-allowed', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    boxShadow: isPinCorrect ? '0 2px 4px rgba(2,132,199,0.3)' : 'none'
                   }}
                 >
                   📱 Show UPI QR Code (₹{order.grandTotal})
                 </button>
-              )}
-
-              {pinError && (
-                <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#ef4444', fontWeight: 'bold', textAlign: 'center' }}>
-                  {pinError}
-                </p>
               )}
             </div>
           </div>
@@ -354,28 +389,28 @@ function OrderCard({ order, onUpdate }) {
         <div style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          backgroundColor: 'rgba(0,0,0,0.75)',
           backdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
-          justify: 'center',
+          justifyContent: 'center',
           zIndex: 1000,
           padding: '16px'
         }}>
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '20px',
+            borderRadius: '24px',
             padding: '24px',
             maxWidth: '360px',
             width: '100%',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
             textAlign: 'center',
             position: 'relative'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ textAlign: 'left' }}>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold' }}>UPI PAYMENT</span>
-                <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px' }}>Scan & Pay ₹{order.grandTotal}</h3>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', letterSpacing: '0.5px' }}>UPI PAYMENT ON DELIVERY</span>
+                <h3 style={{ margin: '2px 0 0', color: '#1e293b', fontSize: '18px' }}>Scan & Pay ₹{order.grandTotal}</h3>
               </div>
               <button 
                 onClick={() => setShowQrModal(false)}
@@ -394,15 +429,15 @@ function OrderCard({ order, onUpdate }) {
             }}>
               <img 
                 src="/upi_qr.png" 
-                alt="UPI Payment QR Code" 
-                style={{ width: '100%', maxWidth: '240px', height: 'auto', borderRadius: '8px', margin: '0 auto', display: 'block' }} 
+                alt="PhonePe UPI Payment QR Code" 
+                style={{ width: '100%', maxWidth: '250px', height: 'auto', borderRadius: '8px', margin: '0 auto', display: 'block' }} 
               />
               <p style={{ margin: '12px 0 0', fontSize: '12px', color: '#475569', fontWeight: '600' }}>
                 Ask customer to scan using PhonePe, GPay, Paytm or any UPI App
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={() => handleConfirmDelivery('UPI')}
                 disabled={submittingPin}
@@ -419,7 +454,7 @@ function OrderCard({ order, onUpdate }) {
                   boxShadow: '0 4px 6px -1px rgba(22, 163, 74, 0.3)'
                 }}
               >
-                {submittingPin ? 'Verifying...' : 'Payment collected through UPI'}
+                {submittingPin ? 'Verifying...' : 'Payment Collected through UPI'}
               </button>
               
               <button
