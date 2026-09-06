@@ -3757,8 +3757,8 @@ function App() {
       <div style={{
         position: 'fixed',
         bottom: totalCartItems > 0 && activeTab !== 'cart' 
-          ? 'calc(135px + env(safe-area-inset-bottom, 0px))' 
-          : 'calc(75px + env(safe-area-inset-bottom, 0px))',
+          ? 'calc(118px + env(safe-area-inset-bottom, 0px))' 
+          : 'calc(62px + env(safe-area-inset-bottom, 0px))',
         left: '50%',
         transform: 'translateX(-50%)',
         width: '100%',
@@ -3801,7 +3801,7 @@ function App() {
       {totalCartItems > 0 && activeTab !== 'cart' && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(58px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           width: '100%',
