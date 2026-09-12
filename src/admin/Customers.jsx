@@ -45,6 +45,9 @@ function Customers() {
 
   const closeOrdersModal = () => {
     setSelectedCustomer(null);
+    setCustomerOrders([]);
+  };
+
   const filteredCustomers = customers.filter(c => 
     c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
     c.email?.toLowerCase().includes(searchQuery.toLowerCase()) || 
