@@ -101,108 +101,10 @@ function Orders() {
   };
 
 
-  const deleteAllOrders = async () => {
-    if (window.confirm("⚠️ DANGER: Are you sure you want to PERMANENTLY DELETE ALL ORDERS from the database? This action cannot be undone.")) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/orders/all`, {
-          method: 'DELETE'
-        });
-        if (response.ok) {
-          setOrders([]);
-          alert("All orders have been permanently deleted.");
-        } else {
-          alert("Failed to delete all orders.");
-        }
-      } catch (error) {
-        console.error("Error deleting all orders:", error);
-        alert("Network error. Please try again.");
-      }
-    }
-  };
-
-  const deleteOrder = async (orderId) => {
-    if (window.confirm("Are you sure you want to permanently delete this order?")) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
-          method: 'DELETE'
-        });
-        if (response.ok) {
-          setOrders(orders.filter(o => o.id !== orderId));
-        } else {
-          alert("Failed to delete order");
-        }
-      } catch (error) {
-        console.error("Error deleting order:", error);
-        alert("Network error. Please try again.");
-      }
-    }
-  };
-
-  const getStatusColor = (status) => {
-    if (status === 'Delivered') return { bg: '#dcfce7', text: '#16a34a' };
-    if (status === 'Arrived') return { bg: '#ccfbf1', text: '#0d9488' };
-    if (status === 'On the way') return { bg: '#e0e7ff', text: '#4338ca' };
-    if (status === 'On the way to Hub') return { bg: '#ffedd5', text: '#c2410c' };
-    return { bg: '#f0f8ff', text: 'var(--primary-green)' };
-  };
-
-  const filteredOrders = orders.filter(order => {
-    // Search match
-    const phoneMatch = order.deliveryDetails?.phone?.includes(searchQuery) || order.userPhone?.includes(searchQuery);
-    const idMatch = order.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const nameMatch = order.deliveryDetails?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSearch = !searchQuery || phoneMatch || idMatch || nameMatch;
-
-    // Status match
-    const currentStatus = order.status || 'Placed';
-    const matchesStatus = statusFilter === 'All' || currentStatus === statusFilter;
-
-    // Date match
-    let matchesDate = true;
-    if (dateFilter) {
-      const filterDateObj = new Date(dateFilter);
-      const filterDateString = filterDateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-      matchesDate = order.date.includes(filterDateString);
-    }
-
-    // Rating match
-    const matchesRating = ratingFilter === 'All' || order.rating === parseInt(ratingFilter);
-
-    // Hub match
-    const matchesHub = hubFilter === 'All' || order.hub_id === parseInt(hubFilter);
-
-    return matchesSearch && matchesStatus && matchesDate && matchesRating && matchesHub;
-  });
-
   return (
     <div className="admin-page">
       <div className="admin-page-header" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <h1 style={{ margin: 0 }}>Orders</h1>
-          <button
-            onClick={deleteAllOrders}
-            style={{
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              padding: '10px 18px',
-              borderRadius: '8px',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
-          >
-            🗑️ Delete All Orders
-          </button>
-        </div>
-
+        <h1 style={{ margin: 0 }}>Orders</h1>
         
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <input 
