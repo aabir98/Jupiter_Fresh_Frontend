@@ -120,6 +120,27 @@ function DeliveryPartners() {
     }
   };
 
+  const deleteAllPartners = async () => {
+    if (window.confirm("⚠️ DANGER: Are you sure you want to PERMANENTLY DELETE ALL DELIVERY PARTNERS (both active and blacklisted) from the database? This action cannot be undone.")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/delivery-personnel/all`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          setPartners([]);
+          setBlacklistedPartners([]);
+          setSelectedPartner(null);
+          alert("All delivery partners have been permanently deleted.");
+        } else {
+          alert("Failed to delete all delivery partners.");
+        }
+      } catch (error) {
+        console.error("Error deleting all delivery partners:", error);
+        alert("Network error. Please try again.");
+      }
+    }
+  };
+
   const filteredPartners = partners.filter(dp => 
     dp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     dp.phone.includes(searchQuery)
@@ -134,7 +155,29 @@ function DeliveryPartners() {
     <div className="admin-content" style={{ padding: '20px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <h2 style={{ margin: 0, color: '#0f172a' }}>Delivery Partners</h2>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={deleteAllPartners}
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+          >
+            🗑️ Delete All Delivery Partners
+          </button>
           <div style={{ position: 'relative' }}>
             <Search size={16} color="#64748b" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
             <input 

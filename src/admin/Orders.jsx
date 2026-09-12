@@ -101,6 +101,25 @@ function Orders() {
   };
 
 
+  const deleteAllOrders = async () => {
+    if (window.confirm("⚠️ DANGER: Are you sure you want to PERMANENTLY DELETE ALL ORDERS from the database? This action cannot be undone.")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/orders/all`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          setOrders([]);
+          alert("All orders have been permanently deleted.");
+        } else {
+          alert("Failed to delete all orders.");
+        }
+      } catch (error) {
+        console.error("Error deleting all orders:", error);
+        alert("Network error. Please try again.");
+      }
+    }
+  };
+
   const deleteOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to permanently delete this order?")) {
       try {
@@ -158,7 +177,32 @@ function Orders() {
   return (
     <div className="admin-page">
       <div className="admin-page-header" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-        <h1 style={{ margin: 0 }}>Orders</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <h1 style={{ margin: 0 }}>Orders</h1>
+          <button
+            onClick={deleteAllOrders}
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+          >
+            🗑️ Delete All Orders
+          </button>
+        </div>
+
         
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           <input 
