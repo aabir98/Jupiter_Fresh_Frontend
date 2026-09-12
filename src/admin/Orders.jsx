@@ -100,6 +100,59 @@ function Orders() {
     }
   };
 
+  const deleteOrder = async (orderId) => {
+    if (window.confirm("Are you sure you want to permanently delete this order?")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          setOrders(orders.filter(o => o.id !== orderId));
+        } else {
+          alert("Failed to delete order");
+        }
+      } catch (error) {
+        console.error("Error deleting order:", error);
+        alert("Network error. Please try again.");
+      }
+    }
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 'Delivered') return { bg: '#dcfce7', text: '#16a34a' };
+    if (status === 'Arrived') return { bg: '#ccfbf1', text: '#0d9488' };
+    if (status === 'On the way') return { bg: '#e0e7ff', text: '#4338ca' };
+    if (status === 'On the way to Hub') return { bg: '#ffedd5', text: '#c2410c' };
+    return { bg: '#f0f8ff', text: 'var(--primary-green)' };
+  };
+
+  const filteredOrders = orders.filter(order => {
+    // Search match
+    const phoneMatch = order.deliveryDetails?.phone?.includes(searchQuery) || order.userPhone?.includes(searchQuery);
+    const idMatch = order.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const nameMatch = order.deliveryDetails?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchQuery || phoneMatch || idMatch || nameMatch;
+
+    // Status match
+    const currentStatus = order.status || 'Placed';
+    const matchesStatus = statusFilter === 'All' || currentStatus === statusFilter;
+
+    // Date match
+    let matchesDate = true;
+    if (dateFilter) {
+      const filterDateObj = new Date(dateFilter);
+      const filterDateString = filterDateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      matchesDate = order.date.includes(filterDateString);
+    }
+
+    // Rating match
+    const matchesRating = ratingFilter === 'All' || order.rating === parseInt(ratingFilter);
+
+    // Hub match
+    const matchesHub = hubFilter === 'All' || order.hub_id === parseInt(hubFilter);
+
+    return matchesSearch && matchesStatus && matchesDate && matchesRating && matchesHub;
+  });
 
   return (
     <div className="admin-page">
